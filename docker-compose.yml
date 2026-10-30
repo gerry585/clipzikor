@@ -1,0 +1,18 @@
+services:
+  discord-cliphub:
+    build: .
+    container_name: discord_cliphub
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - PORT=3000
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET:-}
+      - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI:-http://localhost:3000/auth/discord/callback}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+      - SESSION_SECRET=${SESSION_SECRET:-cliphub_secret_key_change_me_in_production}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:3000}
+    volumes:
+      - /mnt/hdd/uploads:/app/uploads
+      - ./data:/app/data

@@ -1,0 +1,129 @@
+[
+  {
+    "id": "273f7a7e",
+    "title": "злой",
+    "game": "Другое",
+    "videoUrl": "/uploads/videos/273f7a7e_720p.mp4",
+    "thumbnailUrl": "/uploads/thumbnails/273f7a7e.jpg",
+    "qualities": {
+      "1080p": "/uploads/videos/273f7a7e_1080p.mp4",
+      "720p": "/uploads/videos/273f7a7e_720p.mp4",
+      "480p": "/uploads/videos/273f7a7e_480p.mp4",
+      "360p": "/uploads/videos/273f7a7e_360p.mp4"
+    },
+    "originalFilename": "Desktop 2026.09.12 - 21.30.54.03.DVR - Trim.mp4",
+    "createdAt": "2026-10-29T19:20:41.266Z",
+    "views": 13,
+    "author": {
+      "id": "594202758459031559",
+      "username": "hj/пртвет (˃ᴗ•)",
+      "avatarUrl": "https://cdn.discordapp.com/avatars/594202758459031559/01126f4bdc016f5f1baffc26721a9012.png?size=128"
+    },
+    "likes": [],
+    "dislikes": [],
+    "comments": [],
+    "duration": 8.8
+  },
+  {
+    "id": "37356b06",
+    "title": "Мега капельница польщя",
+    "game": "Другое",
+    "videoUrl": "/uploads/videos/37356b06_720p.mp4",
+    "thumbnailUrl": "/uploads/thumbnails/37356b06.jpg",
+    "qualities": {
+      "1080p": "/uploads/videos/37356b06_1080p.mp4",
+      "720p": "/uploads/videos/37356b06_720p.mp4",
+      "480p": "/uploads/videos/37356b06_480p.mp4",
+      "360p": "/uploads/videos/37356b06_360p.mp4"
+    },
+    "originalFilename": "ÐÐµÐ³Ð° ÐºÐ°Ð¿ÐµÐ»ÑÐ½Ð¸ÑÐ°_pl_dubbed.mp4",
+    "createdAt": "2026-10-29T19:18:07.903Z",
+    "views": 12,
+    "author": {
+      "id": "1294668262256410629",
+      "username": "hleby4ek_",
+      "avatarUrl": "https://cdn.discordapp.com/avatars/1294668262256410629/09f24771ed9042115ba1e849fa6eade6.png?size=128"
+    },
+    "likes": [],
+    "dislikes": [],
+    "comments": [],
+    "duration": 30.3
+  },
+  {
+    "id": "adb7885c",
+    "title": "артьем прiтула)",
+    "game": "Fortnite",
+    "videoUrl": "/uploads/videos/adb7885c_720p.mp4",
+    "thumbnailUrl": "/uploads/thumbnails/adb7885c.jpg",
+    "qualities": {
+      "1080p": "/uploads/videos/adb7885c_1080p.mp4",
+      "720p": "/uploads/videos/adb7885c_720p.mp4",
+      "480p": "/uploads/videos/adb7885c_480p.mp4",
+      "360p": "/uploads/videos/adb7885c_360p.mp4"
+    },
+    "originalFilename": "Fortnite 2024.12.03 - 19.08.12.02.DVR - Trim.mp4",
+    "createdAt": "2026-10-29T19:17:46.029Z",
+    "views": 7,
+    "author": {
+      "id": "594202758459031559",
+      "username": "hj/пртвет (˃ᴗ•)",
+      "avatarUrl": "https://cdn.discordapp.com/avatars/594202758459031559/01126f4bdc016f5f1baffc26721a9012.png?size=128"
+    },
+    "likes": [],
+    "dislikes": [],
+    "comments": [],
+    "duration": 16.5
+  },
+  {
+    "id": "63b05197",
+    "title": "днис гвозди",
+    "game": "Другое",
+    "videoUrl": "/uploads/videos/63b05197_720p.mp4",
+    "thumbnailUrl": "/uploads/thumbnails/63b05197.jpg",
+    "qualities": {
+      "1080p": "/uploads/videos/63b05197_1080p.mp4",
+      "720p": "/uploads/videos/63b05197_720p.mp4",
+      "480p": "/uploads/videos/63b05197_480p.mp4",
+      "360p": "/uploads/videos/63b05197_360p.mp4"
+    },
+    "originalFilename": "Dota 2 2026.10.29 - 15.25.58.02.DVR.mp4",
+    "createdAt": "2026-10-29T19:03:27.203Z",
+    "views": 8,
+    "author": {
+      "id": "1294668262256410629",
+      "username": "hleby4ek_",
+      "avatarUrl": "https://cdn.discordapp.com/avatars/1294668262256410629/09f24771ed9042115ba1e849fa6eade6.png?size=128"
+    },
+    "likes": [
+      "938876637209043036"
+    ],
+    "dislikes": [],
+    "comments": [],
+    "duration": 30.3
+  },
+  {
+    "id": "6e5cd480",
+    "title": "Монитор",
+    "game": "Dota 2",
+    "videoUrl": "/uploads/videos/6e5cd480_720p.mp4",
+    "thumbnailUrl": "/uploads/thumbnails/6e5cd480.jpg",
+    "qualities": {
+      "1080p": "/uploads/videos/6e5cd480_1080p.mp4",
+      "720p": "/uploads/videos/6e5cd480_720p.mp4",
+      "480p": "/uploads/videos/6e5cd480_480p.mp4",
+      "360p": "/uploads/videos/6e5cd480_360p.mp4"
+    },
+    "originalFilename": "Dota 2 2026.10.29 - 14.35.51.02.DVR - Trim.mp4",
+    "createdAt": "2026-10-29T18:47:56.495Z",
+    "views": 11,
+    "author": {
+      "id": "938876637209043036",
+      "username": "gerry585",
+      "avatarUrl": "https://cdn.discordapp.com/avatars/938876637209043036/c9c1fa43d53c74bec31ab3d413c9c3cc.png?size=128"
+    },
+    "likes": [],
+    "dislikes": [],
+    "comments": [],
+    "duration": 8.1
+  }
+]

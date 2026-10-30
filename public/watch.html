@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Смотреть клип — ClipZikor</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="description" content="Просмотр игрового клипа в ClipZikor" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            blurple: {
+              DEFAULT: '#5865F2',
+              hover: '#4752C4',
+              light: '#7983F5',
+              dark: '#3C45A5'
+            },
+            dark: {
+              950: '#0a0b0e',
+              900: '#101116',
+              850: '#161720',
+              800: '#1d1f2b',
+              700: '#282b3c',
+              600: '#383d54'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #101116;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #282b3c;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #5865F2;
+    }
+
+    .glass-panel {
+      background: rgba(22, 23, 32, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-input {
+      background: rgba(16, 17, 22, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .glass-input:focus {
+      border-color: #5865F2;
+      box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.25);
+    }
+  </style>
+</head>
+
+<body
+  class="bg-dark-950 text-gray-100 min-h-screen flex flex-col font-sans selection:bg-blurple selection:text-white relative">
+
+  <!-- Ambient Glows -->
+  <div
+    class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blurple/10 blur-[140px] pointer-events-none -z-10">
+  </div>
+  <div
+    class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/10 blur-[140px] pointer-events-none -z-10">
+  </div>
+
+  <!-- Header -->
+  <header class="w-full border-b border-white/5 bg-dark-900/60 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
+
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <!-- Свой логотип: положи файл logo.png рядом с сайтом (/logo.png).
+             Если файла нет — показывается старая иконка. -->
+        <img src="/logo.png" alt="ClipZikor"
+          class="h-10 w-auto max-w-[160px] object-contain group-hover:scale-105 transition-transform"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div style="display:none"
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blurple to-indigo-500 items-center justify-center shadow-lg shadow-blurple/25 group-hover:scale-105 transition-transform">
+          <i data-lucide="clapperboard" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold tracking-tight text-white">Clip<span class="text-blurple">Zikor</span></span>
+          <p class="text-xs text-gray-400 hidden sm:block">Хостинг клипов для Discord</p>
+        </div>
+      </a>
+
+      <!-- Header Actions: Upload New & User Profile -->
+      <div class="flex items-center gap-3">
+        <a href="/gallery"
+          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 hover:text-white border border-white/10 text-sm font-medium transition">
+          <i data-lucide="layout-grid" class="w-4 h-4 text-blurple"></i>
+          <span class="hidden sm:inline">Галерея</span>
+        </a>
+        <a href="/"
+          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 hover:text-white border border-white/10 text-sm font-medium transition">
+          <i data-lucide="plus" class="w-4 h-4 text-blurple"></i>
+          <span>Загрузить клип</span>
+        </a>
+
+        <div id="authContainer" class="flex items-center gap-3">
+          <div class="w-24 h-9 bg-dark-800 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Watch Layout (Two Columns: 65-70% / 30-35%) -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- Loading State Skeleton -->
+    <div id="loadingSkeleton" class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-pulse">
+      <div class="lg:col-span-8 space-y-4">
+        <div class="aspect-video bg-dark-900 rounded-2xl"></div>
+        <div class="h-8 bg-dark-900 rounded-lg w-3/4"></div>
+        <div class="h-6 bg-dark-900 rounded-lg w-1/2"></div>
+      </div>
+      <div class="lg:col-span-4 space-y-4">
+        <div class="h-24 bg-dark-900 rounded-2xl"></div>
+        <div class="h-64 bg-dark-900 rounded-2xl"></div>
+      </div>
+    </div>
+
+    <!-- Error State (Clip Not Found) -->
+    <div id="notFoundBox" class="hidden flex flex-col items-center justify-center py-24 text-center">
+      <div
+        class="w-20 h-20 rounded-3xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center mb-4">
+        <i data-lucide="video-off" class="w-10 h-10"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-white mb-2">Клип не найден</h2>
+      <p class="text-gray-400 text-sm max-w-md mb-6">
+        Возможно, ссылка устарела или клип был удалён автором.
+      </p>
+      <a href="/"
+        class="px-6 py-2.5 rounded-xl bg-blurple hover:bg-blurple-hover text-white font-medium text-sm transition">
+        На главную страницу
+      </a>
+    </div>
+
+    <!-- Content Area (Active Clip) -->
+    <div id="watchContent" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN (65-70% width: 8 cols out of 12) -->
+      <div class="lg:col-span-8 flex flex-col space-y-4">
+
+        <!-- Video Player Container with Custom YouTube-style Controls -->
+        <div id="playerWrapper"
+          class="relative w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 group select-none">
+
+          <!-- Video Element (click to play/pause) -->
+          <video id="mainVideoPlayer" playsinline autoplay class="w-full h-full object-contain cursor-pointer"></video>
+
+          <!-- Center Play/Pause Indicator Overlay -->
+          <div id="centerPlayIndicator"
+            class="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 opacity-0 z-20">
+            <div
+              class="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-2xl scale-95 transition-transform duration-200">
+              <i id="centerPlayIcon" data-lucide="play" class="w-8 h-8 fill-white ml-1"></i>
+            </div>
+          </div>
+
+          <!-- YouTube-style Quality Dropdown Menu (Positioned inside player directly ABOVE the gear button) -->
+          <div id="playerQualityMenu"
+            class="hidden absolute bottom-16 right-4 z-40 w-60 max-h-[calc(100%-5rem)] rounded-2xl bg-dark-900/95 backdrop-blur-xl border border-white/15 shadow-2xl overflow-y-auto">
+            <div
+              class="px-4 py-2.5 border-b border-white/5 flex items-center justify-between text-xs font-semibold text-gray-300">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="sliders" class="w-3.5 h-3.5 text-blurple"></i>
+                <span>Качество видео</span>
+              </span>
+            </div>
+            <div id="qualityOptionsContainer" class="p-1.5 space-y-0.5 text-xs">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Playback speed -->
+            <div
+              class="px-4 py-2.5 border-y border-white/5 flex items-center justify-between text-xs font-semibold text-gray-300">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="gauge" class="w-3.5 h-3.5 text-blurple"></i>
+                <span>Скорость</span>
+              </span>
+              <span id="speedCurrentLabel"
+                class="text-[10px] text-blurple-light bg-blurple/15 px-2 py-0.5 rounded-full font-mono">1×</span>
+            </div>
+            <div id="speedOptionsContainer" class="p-1.5 grid grid-cols-4 gap-1 text-xs">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Bottom Control Bar (YouTube style, auto-hides) -->
+          <div id="playerControlsBar"
+            class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-8 pb-3 px-4 flex flex-col gap-2 transition-opacity duration-300 z-30 opacity-100">
+
+            <!-- Seekbar Timeline -->
+            <div id="timelineContainer"
+              class="relative w-full h-2 flex items-center cursor-pointer group/timeline py-1">
+              <!-- Background bar -->
+              <div
+                class="w-full h-1 group-hover/timeline:h-1.5 rounded-full bg-white/20 transition-all relative overflow-hidden">
+                <!-- Buffer progress -->
+                <div id="playerBufferBar" class="absolute top-0 left-0 h-full bg-white/30 rounded-full w-0"></div>
+                <!-- Play progress -->
+                <div id="playerProgressBar" class="absolute top-0 left-0 h-full bg-blurple rounded-full w-0"></div>
+              </div>
+              <!-- Thumb circle -->
+              <div id="playerProgressThumb"
+                class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-md scale-0 group-hover/timeline:scale-100 transition-transform pointer-events-none"
+                style="left: 0%;"></div>
+
+              <!-- Hover timestamp tooltip -->
+              <div id="timelineTooltip"
+                class="hidden absolute bottom-5 -translate-x-1/2 px-2 py-1 rounded bg-black/80 text-white text-[10px] font-mono pointer-events-none whitespace-nowrap border border-white/10">
+                00:00</div>
+            </div>
+
+            <!-- Buttons Row -->
+            <div class="flex items-center justify-between text-white text-xs">
+
+              <!-- Left controls: Play, Volume, Time -->
+              <div class="flex items-center gap-3">
+                <!-- Play/Pause Button -->
+                <button id="playerPlayBtn" type="button"
+                  class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition"
+                  title="Воспроизведение (Space)">
+                  <i id="playerPlayBtnIcon" data-lucide="play" class="w-5 h-5 fill-white"></i>
+                </button>
+
+                <!-- Volume Container -->
+                <div class="flex items-center gap-1.5 group/vol">
+                  <button id="playerMuteBtn" type="button"
+                    class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition"
+                    title="Звук (M)">
+                    <i id="playerMuteBtnIcon" data-lucide="volume-2" class="w-5 h-5"></i>
+                  </button>
+                  <input id="playerVolumeSlider" type="range" min="0" max="1" step="0.05" value="1"
+                    class="w-16 h-1 accent-blurple cursor-pointer bg-white/20 rounded-lg transition-all" />
+                </div>
+
+                <!-- Time display -->
+                <span id="playerTimeDisplay" class="text-xs font-mono text-gray-300">00:00 / 00:00</span>
+              </div>
+
+              <!-- Right controls: Trim shortcut, Quality gear, Fullscreen -->
+              <div class="flex items-center gap-2">
+
+                <!-- Trim shortcut inside player -->
+                <button id="playerTrimShortcutBtn" type="button" style="display:none"
+                  class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition"
+                  title="Обрезать клип">
+                  <i data-lucide="scissors" class="w-3.5 h-3.5 text-blurple"></i>
+                  <span class="hidden sm:inline">Обрезать</span>
+                </button>
+
+                <!-- Quality / Settings Gear Button directly in player -->
+                <button id="playerQualityGearBtn" type="button"
+                  class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 hover:border-blurple border border-white/10 text-xs font-semibold transition group/gear"
+                  title="Выбор качества видео">
+                  <i data-lucide="settings"
+                    class="w-4 h-4 text-blurple group-hover/gear:rotate-45 transition-transform duration-300"></i>
+                  <span id="playerQualityGearLabel" class="font-mono">Auto</span>
+                </button>
+
+                <!-- Fullscreen Button -->
+                <button id="playerFullscreenBtn" type="button"
+                  class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition"
+                  title="Во весь экран (F)">
+                  <i id="playerFullscreenIcon" data-lucide="maximize" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Video Metadata Under Player (No unintuitive quality buttons below player) -->
+        <div class="glass-panel rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h1 id="clipTitleHeader" class="text-xl sm:text-2xl font-bold text-white tracking-tight break-words flex-1">
+              Название клипа
+            </h1>
+
+            <!-- Game Category Badge -->
+            <span id="clipGameBadge"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blurple/15 border border-blurple/30 text-blurple-light text-xs font-semibold">
+              <i data-lucide="gamepad-2" class="w-3.5 h-3.5"></i>
+              <span id="clipGameText">Игра</span>
+            </span>
+          </div>
+
+          <!-- Author Info & Publishing Details -->
+          <div class="flex flex-wrap items-center justify-between pt-2 border-t border-white/5 gap-4">
+
+            <!-- Author Block -->
+            <div class="flex items-center gap-3">
+              <img id="clipAuthorAvatar" src="" alt="Avatar"
+                class="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" />
+              <div>
+                <div class="flex items-center gap-2">
+                  <span id="clipAuthorName" class="text-sm font-semibold text-white">Автор</span>
+                  <span
+                    class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blurple/20 text-blurple-light">Discord</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-gray-400">
+                  <span id="clipDateText" class="flex items-center gap-1">
+                    <i data-lucide="calendar" class="w-3 h-3"></i>
+                    --
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Owner actions (видны только автору клипа) -->
+            <div id="clipOwnerActions" class="hidden items-center gap-2">
+              <button id="editClipBtn" type="button"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-200 hover:text-white transition">
+                <i data-lucide="pencil" class="w-3.5 h-3.5 text-blurple"></i>
+                <span>Изменить</span>
+              </button>
+              <button id="deleteClipBtn" type="button"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-semibold text-rose-400 transition">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Удалить</span>
+              </button>
+            </div>
+
+            <!-- Views Counter Badge -->
+            <div
+              class="flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+              <i data-lucide="eye" class="w-4 h-4 text-gray-400"></i>
+              <span id="clipViewsCount" class="font-semibold text-white">0</span>
+              <span>просмотров</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN (30-35% width: 4 cols out of 12) -->
+      <div class="lg:col-span-4 flex flex-col space-y-4">
+
+        <!-- Action & Reactions Block -->
+        <div class="glass-panel rounded-2xl p-5 space-y-3">
+
+          <!-- Reactions Row -->
+          <div class="grid grid-cols-2 gap-3">
+
+            <!-- Like Button -->
+            <button id="likeBtn"
+              class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-dark-900 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 text-gray-300 hover:text-emerald-400 transition-all font-semibold text-sm group">
+              <i data-lucide="thumbs-up" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+              <span id="likeCount">0</span>
+            </button>
+
+            <!-- Dislike Button -->
+            <button id="dislikeBtn"
+              class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-dark-900 border border-white/10 hover:border-rose-500/50 hover:bg-rose-500/10 text-gray-300 hover:text-rose-400 transition-all font-semibold text-sm group">
+              <i data-lucide="thumbs-down" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+              <span id="dislikeCount">0</span>
+            </button>
+
+          </div>
+
+          <!-- Trim Clip Button -->
+          <button id="openTrimModalBtn" style="display:none"
+            class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all border border-white/10 hover:border-blurple/50 hover:scale-[1.01] active:scale-[0.99]"
+            title="Обрезать клип и сохранить">
+            <i data-lucide="scissors" class="w-4 h-4 text-blurple"></i>
+            <span>Обрезать клип</span>
+          </button>
+
+          <!-- Share / Copy Link Button -->
+          <button id="copyLinkBtn"
+            class="w-full py-2.5 px-4 rounded-xl bg-blurple hover:bg-blurple-hover text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blurple/20 hover:scale-[1.01] active:scale-[0.99]">
+            <i id="copyLinkIcon" data-lucide="copy" class="w-4 h-4"></i>
+            <span id="copyLinkText">Скопировать ссылку</span>
+          </button>
+
+        </div>
+
+        <!-- Comments Block -->
+        <div class="glass-panel rounded-2xl p-5 flex flex-col h-[520px]">
+
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/5">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="message-square" class="w-4 h-4 text-blurple"></i>
+              <span>Комментарии</span>
+            </h3>
+            <span id="commentCountBadge" class="text-xs text-gray-400 font-medium">0</span>
+          </div>
+
+          <!-- Comments Feed (Separate Scrollable Container) -->
+          <div id="commentsFeed" class="flex-1 overflow-y-auto pr-1 space-y-3.5 mb-4">
+            <div id="noCommentsState"
+              class="h-full flex flex-col items-center justify-center text-center text-gray-500 text-xs py-8">
+              <i data-lucide="messages-square" class="w-8 h-8 mb-2 opacity-40"></i>
+              <p>Пока нет комментариев</p>
+              <p class="text-[11px] text-gray-600">Будьте первым, кто оставит реакцию!</p>
+            </div>
+          </div>
+
+          <!-- Comment Input Form -->
+          <div id="commentFormContainer" class="pt-3 border-t border-white/5">
+
+            <!-- Unauthorized prompt -->
+            <div id="unauthCommentPrompt"
+              class="hidden text-center py-3 bg-dark-900/80 rounded-xl border border-white/5 p-3">
+              <p class="text-xs text-gray-400 mb-2">Комментировать могут участники сервера — войдите через Discord</p>
+              <a href="/auth/discord"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blurple hover:bg-blurple-hover text-white text-xs font-semibold transition">
+                <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+                <span>Войти</span>
+              </a>
+            </div>
+
+            <!-- Authorized Comment Form -->
+            <form id="commentForm" class="hidden space-y-2">
+              <div class="flex gap-2">
+                <img id="myCommentAvatar" src="" alt="Me"
+                  class="w-8 h-8 rounded-full object-cover ring-1 ring-white/10 shrink-0" />
+                <div class="flex-1 relative">
+                  <textarea id="commentInput" rows="2" placeholder="Написать комментарий..." maxlength="500"
+                    class="glass-input w-full p-2.5 text-xs text-white placeholder-gray-500 rounded-xl resize-none focus:outline-none"></textarea>
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button type="submit" id="submitCommentBtn"
+                  class="px-4 py-1.5 rounded-lg bg-blurple hover:bg-blurple-hover text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
+                  <i data-lucide="send" class="w-3 h-3"></i>
+                  <span>Отправить</span>
+                </button>
+              </div>
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Trim Modal on Watch Page -->
+  <div id="trimModal"
+    class="hidden fixed inset-0 z-50 bg-dark-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div
+      class="w-full max-w-2xl bg-dark-900 border border-white/10 rounded-3xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+
+      <div class="flex items-center justify-between pb-3 border-b border-white/5">
+        <div class="flex items-center gap-2 text-white font-bold text-base">
+          <i data-lucide="scissors" class="w-5 h-5 text-blurple"></i>
+          <span>Обрезать клип</span>
+        </div>
+        <button id="closeTrimModalBtn" type="button"
+          class="w-8 h-8 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Video Preview for Trimming -->
+      <div class="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/10">
+        <video id="trimModalVideo" playsinline class="w-full h-full object-contain"></video>
+      </div>
+
+      <!-- Trimmer Dual-slider track -->
+      <div class="p-4 rounded-2xl bg-dark-950/60 border border-white/5 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Перетащите ползунки для выбора фрагмента</span>
+          <span id="modalTrimDuration"
+            class="text-xs font-mono text-blurple-light bg-blurple/15 px-2.5 py-0.5 rounded-full border border-blurple/30 font-semibold">
+            Отрезок: 0.0 сек
+          </span>
+        </div>
+
+        <div class="relative h-6 flex items-center">
+          <div class="absolute inset-x-0 h-2 bg-dark-800 rounded-full overflow-hidden border border-white/5">
+            <div id="modalTrimTrack" class="absolute h-full bg-blurple rounded-full" style="left: 0%; right: 0%;"></div>
+          </div>
+          <input type="range" id="modalTrimStart" min="0" max="100" step="0.1" value="0"
+            class="absolute inset-x-0 w-full accent-blurple cursor-pointer bg-transparent pointer-events-auto" />
+          <input type="range" id="modalTrimEnd" min="0" max="100" step="0.1" value="100"
+            class="absolute inset-x-0 w-full accent-indigo-400 cursor-pointer bg-transparent pointer-events-auto" />
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <button type="button" id="modalSetStartBtn"
+            class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-[11px] transition">
+            [ Начало: <span id="modalTrimStartText" class="font-mono text-white">00:00.0</span> ]
+          </button>
+          <button type="button" id="modalPlayTrimBtn"
+            class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blurple/20 hover:bg-blurple/30 text-blurple-light font-medium transition">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+            <span>Предпросмотр</span>
+          </button>
+          <button type="button" id="modalSetEndBtn"
+            class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-[11px] transition">
+            [ Конец: <span id="modalTrimEndText" class="font-mono text-white">00:00.0</span> ]
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode selection: Replace current or Save as new -->
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <label
+            class="flex items-center gap-2.5 p-3 rounded-xl border border-white/10 bg-dark-950/40 cursor-pointer hover:border-blurple/50 transition">
+            <input type="radio" name="trimMode" value="replace" checked class="accent-blurple" />
+            <div class="text-xs">
+              <div class="font-semibold text-white">Обрезать этот клип</div>
+              <div class="text-gray-400 text-[11px]">Заменить видео фрагментом</div>
+            </div>
+          </label>
+          <label
+            class="flex items-center gap-2.5 p-3 rounded-xl border border-white/10 bg-dark-950/40 cursor-pointer hover:border-blurple/50 transition">
+            <input type="radio" name="trimMode" value="new" class="accent-blurple" />
+            <div class="text-xs">
+              <div class="font-semibold text-white">Создать новый клип</div>
+              <div class="text-gray-400 text-[11px]">Сохранить как копию</div>
+            </div>
+          </label>
+        </div>
+
+        <div id="newClipTitleGroup" class="hidden">
+          <input type="text" id="modalNewTitle" placeholder="Название нового обрезанного клипа"
+            class="glass-input w-full p-2.5 text-xs text-white rounded-xl focus:outline-none" />
+        </div>
+      </div>
+
+      <!-- Modal Submit Buttons -->
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button id="cancelTrimBtn" type="button"
+          class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-gray-300 hover:text-white transition">
+          Отмена
+        </button>
+        <button id="submitTrimBtn" type="button"
+          class="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-blurple hover:bg-blurple-hover text-white text-xs font-semibold transition shadow-lg shadow-blurple/25">
+          <i data-lucide="scissors" class="w-3.5 h-3.5"></i>
+          <span id="submitTrimBtnText">Обрезать и сохранить</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- Client JavaScript Logic -->
+  <script src="/clip-actions.js"></script>
+  <script>
+    // State
+    let currentUser = null;
+    let clipData = null;
+    const clipId = window.location.pathname.split('/').filter(Boolean).pop();
+
+    // DOM Elements
+    const authContainer = document.getElementById('authContainer');
+    const loadingSkeleton = document.getElementById('loadingSkeleton');
+    const notFoundBox = document.getElementById('notFoundBox');
+    const watchContent = document.getElementById('watchContent');
+    const playerWrapper = document.getElementById('playerWrapper');
+    const mainVideoPlayer = document.getElementById('mainVideoPlayer');
+    const clipTitleHeader = document.getElementById('clipTitleHeader');
+    const clipGameBadge = document.getElementById('clipGameBadge');
+    const clipGameText = document.getElementById('clipGameText');
+    const clipAuthorAvatar = document.getElementById('clipAuthorAvatar');
+    const clipAuthorName = document.getElementById('clipAuthorName');
+    const clipDateText = document.getElementById('clipDateText');
+    const clipViewsCount = document.getElementById('clipViewsCount');
+    const likeBtn = document.getElementById('likeBtn');
+    const dislikeBtn = document.getElementById('dislikeBtn');
+    const likeCount = document.getElementById('likeCount');
+    const dislikeCount = document.getElementById('dislikeCount');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const copyLinkIcon = document.getElementById('copyLinkIcon');
+    const copyLinkText = document.getElementById('copyLinkText');
+    const commentsFeed = document.getElementById('commentsFeed');
+    const noCommentsState = document.getElementById('noCommentsState');
+    const commentCountBadge = document.getElementById('commentCountBadge');
+    const unauthCommentPrompt = document.getElementById('unauthCommentPrompt');
+    const commentForm = document.getElementById('commentForm');
+    const myCommentAvatar = document.getElementById('myCommentAvatar');
+    const commentInput = document.getElementById('commentInput');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // Custom Player Elements
+    const centerPlayIndicator = document.getElementById('centerPlayIndicator');
+    const centerPlayIcon = document.getElementById('centerPlayIcon');
+    const playerControlsBar = document.getElementById('playerControlsBar');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const playerProgressBar = document.getElementById('playerProgressBar');
+    const playerBufferBar = document.getElementById('playerBufferBar');
+    const playerProgressThumb = document.getElementById('playerProgressThumb');
+    const timelineTooltip = document.getElementById('timelineTooltip');
+    const playerPlayBtn = document.getElementById('playerPlayBtn');
+    const playerPlayBtnIcon = document.getElementById('playerPlayBtnIcon');
+    const playerMuteBtn = document.getElementById('playerMuteBtn');
+    const playerMuteBtnIcon = document.getElementById('playerMuteBtnIcon');
+    const playerVolumeSlider = document.getElementById('playerVolumeSlider');
+    const playerTimeDisplay = document.getElementById('playerTimeDisplay');
+    const playerQualityGearBtn = document.getElementById('playerQualityGearBtn');
+    const playerQualityGearLabel = document.getElementById('playerQualityGearLabel');
+    const playerQualityMenu = document.getElementById('playerQualityMenu');
+    const qualityOptionsContainer = document.getElementById('qualityOptionsContainer');
+    const playerFullscreenBtn = document.getElementById('playerFullscreenBtn');
+    const playerFullscreenIcon = document.getElementById('playerFullscreenIcon');
+    const playerTrimShortcutBtn = document.getElementById('playerTrimShortcutBtn');
+    const openTrimModalBtn = document.getElementById('openTrimModalBtn');
+
+    // Trim Modal Elements
+    const trimModal = document.getElementById('trimModal');
+    const closeTrimModalBtn = document.getElementById('closeTrimModalBtn');
+    const cancelTrimBtn = document.getElementById('cancelTrimBtn');
+    const trimModalVideo = document.getElementById('trimModalVideo');
+    const modalTrimStart = document.getElementById('modalTrimStart');
+    const modalTrimEnd = document.getElementById('modalTrimEnd');
+    const modalTrimTrack = document.getElementById('modalTrimTrack');
+    const modalTrimDuration = document.getElementById('modalTrimDuration');
+    const modalTrimStartText = document.getElementById('modalTrimStartText');
+    const modalTrimEndText = document.getElementById('modalTrimEndText');
+    const modalSetStartBtn = document.getElementById('modalSetStartBtn');
+    const modalSetEndBtn = document.getElementById('modalSetEndBtn');
+    const modalPlayTrimBtn = document.getElementById('modalPlayTrimBtn');
+    const submitTrimBtn = document.getElementById('submitTrimBtn');
+    const submitTrimBtnText = document.getElementById('submitTrimBtnText');
+    const modalNewTitle = document.getElementById('modalNewTitle');
+    const newClipTitleGroup = document.getElementById('newClipTitleGroup');
+
+    // Show Toast
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-semibold backdrop-blur-xl transition-all duration-300 transform translate-y-4 opacity-0 bg-dark-900/90 border-white/10 text-white`;
+
+      const iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-triangle' : 'info';
+      const iconColor = type === 'success' ? 'text-emerald-400' : type === 'error' ? 'text-rose-400' : 'text-blurple';
+
+      toast.innerHTML = `
+        <div class="shrink-0 ${iconColor}">
+          <i data-lucide="${iconName}" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1 font-medium">${message}</div>
+      `;
+
+      toastContainer.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => toast.classList.remove('translate-y-4', 'opacity-0'), 20);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Format Relative Time in Russian
+    function formatRelativeTime(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffSec = Math.floor(diffMs / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHour = Math.floor(diffMin / 60);
+      const diffDay = Math.floor(diffHour / 24);
+
+      if (diffSec < 60) return 'Только что';
+      if (diffMin < 60) return `${diffMin} мин. назад`;
+      if (diffHour < 24) return `${diffHour} ч. назад`;
+      if (diffDay === 1) return 'Вчера';
+      if (diffDay < 7) return `${diffDay} дн. назад`;
+
+      return date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds) || seconds < 0) return '00:00';
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function formatTimeDetailed(seconds) {
+      if (isNaN(seconds) || seconds < 0) return '00:00.0';
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      const ms = Math.floor((seconds % 1) * 10);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${ms}`;
+    }
+
+    // ---------------------------------------------------------
+    // YouTube-style Quality Selector Management (INSIDE PLAYER)
+    // ---------------------------------------------------------
+    const QUALITY_CONFIG = [
+      { key: 'auto', label: 'Auto', desc: 'Автонастройка качества' },
+      { key: '1080p', label: '1080p', desc: 'Full HD' },
+      { key: '720p', label: '720p', desc: 'HD' },
+      { key: '480p', label: '480p (30 кадров/с)', desc: 'Стандартное' },
+      { key: '360p', label: '360p (30 кадров/с)', desc: 'Экономия трафика' }
+    ];
+
+    let currentQualityChoice = localStorage.getItem('clipzikor_preferred_quality') || 'auto';
+    let resolvedActiveQuality = '720p';
+    let currentSpeed = 1;
+
+    function pickAutoQuality() {
+      if (!clipData || !clipData.qualities) return '720p';
+      const available = Object.keys(clipData.qualities);
+
+      const isMobile = window.innerWidth < 768;
+      if (navigator.connection) {
+        const conn = navigator.connection;
+        if (conn.saveData || (conn.effectiveType && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g'))) {
+          if (available.includes('360p')) return '360p';
+        }
+        if (conn.effectiveType === '3g') {
+          if (available.includes('480p')) return '480p';
+        }
+      }
+
+      if (isMobile) {
+        if (available.includes('720p')) return '720p';
+        if (available.includes('480p')) return '480p';
+      }
+
+      if (available.includes('1080p')) return '1080p';
+      if (available.includes('720p')) return '720p';
+      return available[0] || '720p';
+    }
+
+    function getQualityUrl(qualityKey) {
+      if (!clipData) return '';
+      if (qualityKey === 'auto') {
+        resolvedActiveQuality = pickAutoQuality();
+        return (clipData.qualities && clipData.qualities[resolvedActiveQuality]) || clipData.videoUrl;
+      }
+      resolvedActiveQuality = qualityKey;
+      return (clipData.qualities && clipData.qualities[qualityKey]) || clipData.videoUrl;
+    }
+
+    function setQuality(qualityKey, showNotification = true) {
+      currentQualityChoice = qualityKey;
+      localStorage.setItem('clipzikor_preferred_quality', qualityKey);
+
+      const targetUrl = getQualityUrl(qualityKey);
+      if (!targetUrl) return;
+
+      const currentSec = mainVideoPlayer.currentTime;
+      const wasPlaying = !mainVideoPlayer.paused && !mainVideoPlayer.ended && mainVideoPlayer.readyState > 0;
+
+      const absoluteTarget = new URL(targetUrl, window.location.href).href;
+      if (mainVideoPlayer.src !== absoluteTarget) {
+        mainVideoPlayer.src = targetUrl;
+
+        const onLoaded = () => {
+          try {
+            mainVideoPlayer.currentTime = currentSec;
+            if (wasPlaying) mainVideoPlayer.play().catch(() => { });
+          } catch (e) { }
+          mainVideoPlayer.removeEventListener('loadedmetadata', onLoaded);
+        };
+        mainVideoPlayer.addEventListener('loadedmetadata', onLoaded);
+
+        try {
+          mainVideoPlayer.currentTime = currentSec;
+          if (wasPlaying) mainVideoPlayer.play().catch(() => { });
+        } catch (e) { }
+      }
+
+      updateQualityUI();
+      closeQualityMenu();
+
+      if (showNotification) {
+        const item = QUALITY_CONFIG.find((q) => q.key === qualityKey);
+        const label = qualityKey === 'auto' ? `Авто (${resolvedActiveQuality})` : (item ? item.label : qualityKey);
+        showToast(`Качество: ${label}`, 'info');
+      }
+    }
+
+    function renderQualityOptions() {
+      if (!qualityOptionsContainer || !clipData) return;
+
+      const availableQualities = clipData.qualities ? Object.keys(clipData.qualities) : [];
+
+      let html = '';
+      QUALITY_CONFIG.forEach((q) => {
+        if (q.key !== 'auto' && availableQualities.length > 0 && !availableQualities.includes(q.key)) {
+          return;
+        }
+
+        const isSelected = currentQualityChoice === q.key;
+        const isAuto = q.key === 'auto';
+        const displayLabel = isAuto ? `Авто (${resolvedActiveQuality})` : q.label;
+
+        html += `
+          <button
+            type="button"
+            onclick="setQuality('${q.key}')"
+            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all group ${isSelected
+            ? 'bg-blurple/25 text-white font-semibold border border-blurple/40'
+            : 'text-gray-300 hover:text-white hover:bg-white/10 border border-transparent'
+          }"
+          >
+            <div class="flex items-center gap-2">
+              <span class="w-4 flex items-center justify-center text-blurple">
+                ${isSelected ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
+              </span>
+              <div>
+                <div class="font-medium text-xs text-white">${displayLabel}</div>
+                <div class="text-[10px] text-gray-400 group-hover:text-gray-300">${q.desc}</div>
+              </div>
+            </div>
+            ${q.key === '1080p' || q.key === '720p' ? '<span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-blurple/20 text-blurple-light">HD</span>' : ''}
+          </button>
+        `;
+      });
+
+      qualityOptionsContainer.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function updateQualityUI() {
+      const isAuto = currentQualityChoice === 'auto';
+      const labelText = isAuto ? 'Auto' : currentQualityChoice;
+      const speedSuffix = currentSpeed !== 1 ? ` · ${fmtSpeed(currentSpeed)}` : '';
+      if (playerQualityGearLabel) playerQualityGearLabel.textContent = labelText + speedSuffix;
+      renderQualityOptions();
+    }
+
+    function toggleQualityMenu(e) {
+      if (e) e.stopPropagation();
+      if (!playerQualityMenu) return;
+      playerQualityMenu.classList.toggle('hidden');
+      renderQualityOptions();
+    }
+
+    function closeQualityMenu() {
+      if (playerQualityMenu) playerQualityMenu.classList.add('hidden');
+    }
+
+    // ---------------------------------------------------------
+    // Playback speed
+    // ---------------------------------------------------------
+    const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+    function fmtSpeed(v) {
+      return `${v}×`;
+    }
+
+    function renderSpeedOptions() {
+      const box = document.getElementById('speedOptionsContainer');
+      const label = document.getElementById('speedCurrentLabel');
+      if (label) label.textContent = fmtSpeed(currentSpeed);
+      if (!box) return;
+      box.innerHTML = SPEED_OPTIONS.map((v) => `
+        <button type="button" onclick="setSpeed(${v})"
+          class="py-1.5 rounded-lg font-mono text-[11px] transition border ${v === currentSpeed
+          ? 'bg-blurple/25 text-white font-semibold border-blurple/40'
+          : 'text-gray-300 hover:text-white hover:bg-white/10 border-transparent'}">${fmtSpeed(v)}</button>
+      `).join('');
+    }
+
+    function setSpeed(v, showNotification = true) {
+      currentSpeed = v;
+      // defaultPlaybackRate нужен, чтобы скорость не сбрасывалась при смене качества (смена src)
+      mainVideoPlayer.defaultPlaybackRate = v;
+      mainVideoPlayer.playbackRate = v;
+      renderSpeedOptions();
+      updateQualityUI();
+      closeQualityMenu();
+      if (showNotification) {
+        showToast(v === 1 ? 'Скорость: обычная' : `Скорость: ${fmtSpeed(v)}`, 'info');
+      }
+    }
+
+    renderSpeedOptions();
+
+    // ---------------------------------------------------------
+    // Custom Video Player Controls Implementation
+    // ---------------------------------------------------------
+    let controlsHideTimeout = null;
+
+    function showControls() {
+      playerControlsBar.classList.remove('opacity-0', 'pointer-events-none');
+      playerControlsBar.classList.add('opacity-100');
+      startControlsHideTimer();
+    }
+
+    function startControlsHideTimer() {
+      if (controlsHideTimeout) clearTimeout(controlsHideTimeout);
+      if (!mainVideoPlayer.paused && !mainVideoPlayer.ended) {
+        controlsHideTimeout = setTimeout(() => {
+          if (playerQualityMenu.classList.contains('hidden')) {
+            playerControlsBar.classList.remove('opacity-100');
+            playerControlsBar.classList.add('opacity-0', 'pointer-events-none');
+          }
+        }, 2500);
+      }
+    }
+
+    // Смена иконки Lucide: createIcons() заменяет <i> на <svg>, поэтому
+    // старые ссылки на элемент становятся неактуальными. Ищем элемент по id каждый раз.
+    function setIcon(id, name) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const i = document.createElement('i');
+      i.id = id;
+      i.className = (el.getAttribute('class') || '').replace(/\blucide(-[\w-]+)?\b/g, '').trim();
+      i.setAttribute('data-lucide', name);
+      el.replaceWith(i);
+      lucide.createIcons();
+    }
+
+    function togglePlay() {
+      if (mainVideoPlayer.paused || mainVideoPlayer.ended) {
+        mainVideoPlayer.play();
+        showCenterIndicator('play');
+      } else {
+        mainVideoPlayer.pause();
+        showCenterIndicator('pause');
+      }
+    }
+
+    function showCenterIndicator(iconType) {
+      setIcon('centerPlayIcon', iconType);
+      lucide.createIcons();
+      centerPlayIndicator.classList.remove('opacity-0');
+      centerPlayIndicator.classList.add('opacity-100');
+      setTimeout(() => {
+        centerPlayIndicator.classList.remove('opacity-100');
+        centerPlayIndicator.classList.add('opacity-0');
+      }, 500);
+    }
+
+    // Video events
+    mainVideoPlayer.addEventListener('play', () => {
+      setIcon('playerPlayBtnIcon', 'pause');
+      lucide.createIcons();
+      startControlsHideTimer();
+    });
+
+    mainVideoPlayer.addEventListener('pause', () => {
+      setIcon('playerPlayBtnIcon', 'play');
+      lucide.createIcons();
+      showControls();
+    });
+
+    mainVideoPlayer.addEventListener('timeupdate', () => {
+      const current = mainVideoPlayer.currentTime;
+      const total = mainVideoPlayer.duration || 0;
+      const pct = total > 0 ? (current / total) * 100 : 0;
+
+      playerProgressBar.style.width = `${pct}%`;
+      playerProgressThumb.style.left = `${pct}%`;
+      playerTimeDisplay.textContent = `${formatTime(current)} / ${formatTime(total)}`;
+    });
+
+    mainVideoPlayer.addEventListener('progress', () => {
+      if (mainVideoPlayer.buffered.length > 0 && mainVideoPlayer.duration > 0) {
+        const bufferedEnd = mainVideoPlayer.buffered.end(mainVideoPlayer.buffered.length - 1);
+        const pct = (bufferedEnd / mainVideoPlayer.duration) * 100;
+        playerBufferBar.style.width = `${pct}%`;
+      }
+    });
+
+    // Player click & hover
+    mainVideoPlayer.addEventListener('click', togglePlay);
+    playerPlayBtn.addEventListener('click', togglePlay);
+
+    playerWrapper.addEventListener('mousemove', showControls);
+    playerWrapper.addEventListener('mouseleave', () => {
+      if (!mainVideoPlayer.paused) {
+        playerControlsBar.classList.remove('opacity-100');
+        playerControlsBar.classList.add('opacity-0', 'pointer-events-none');
+        closeQualityMenu();
+      }
+    });
+
+    // Timeline Scrubbing
+    timelineContainer.addEventListener('click', (e) => {
+      const rect = timelineContainer.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      if (mainVideoPlayer.duration) {
+        mainVideoPlayer.currentTime = pos * mainVideoPlayer.duration;
+      }
+    });
+
+    timelineContainer.addEventListener('mousemove', (e) => {
+      const rect = timelineContainer.getBoundingClientRect();
+      const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      if (mainVideoPlayer.duration) {
+        timelineTooltip.style.left = `${pos * 100}%`;
+        timelineTooltip.textContent = formatTime(pos * mainVideoPlayer.duration);
+        timelineTooltip.classList.remove('hidden');
+      }
+    });
+
+    timelineContainer.addEventListener('mouseleave', () => {
+      timelineTooltip.classList.add('hidden');
+    });
+
+    // Volume Controls
+    playerVolumeSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      mainVideoPlayer.volume = val;
+      mainVideoPlayer.muted = (val === 0);
+      updateVolumeIcon(val);
+    });
+
+    playerMuteBtn.addEventListener('click', () => {
+      mainVideoPlayer.muted = !mainVideoPlayer.muted;
+      updateVolumeIcon(mainVideoPlayer.muted ? 0 : mainVideoPlayer.volume);
+    });
+
+    function updateVolumeIcon(vol) {
+      if (vol === 0 || mainVideoPlayer.muted) {
+        setIcon('playerMuteBtnIcon', 'volume-x');
+      } else if (vol < 0.5) {
+        setIcon('playerMuteBtnIcon', 'volume-1');
+      } else {
+        setIcon('playerMuteBtnIcon', 'volume-2');
+      }
+      lucide.createIcons();
+    }
+
+    // Fullscreen Toggle
+    playerFullscreenBtn.addEventListener('click', toggleFullscreen);
+    playerWrapper.addEventListener('dblclick', toggleFullscreen);
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        if (playerWrapper.requestFullscreen) {
+          playerWrapper.requestFullscreen();
+        } else if (playerWrapper.webkitRequestFullscreen) {
+          playerWrapper.webkitRequestFullscreen();
+        }
+        setIcon('playerFullscreenIcon', 'minimize');
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+        setIcon('playerFullscreenIcon', 'maximize');
+      }
+      lucide.createIcons();
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (e.code === 'Space' || e.code === 'KeyK') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        mainVideoPlayer.currentTime = Math.max(0, mainVideoPlayer.currentTime - 5);
+        showToast('-5 сек', 'info');
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        mainVideoPlayer.currentTime = Math.min(mainVideoPlayer.duration, mainVideoPlayer.currentTime + 5);
+        showToast('+5 сек', 'info');
+      } else if (e.code === 'KeyM') {
+        e.preventDefault();
+        mainVideoPlayer.muted = !mainVideoPlayer.muted;
+        updateVolumeIcon(mainVideoPlayer.muted ? 0 : mainVideoPlayer.volume);
+      } else if (e.code === 'KeyF') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    });
+
+    // Quality Menu trigger
+    playerQualityGearBtn.addEventListener('click', toggleQualityMenu);
+    document.addEventListener('click', (e) => {
+      if (playerQualityMenu && !playerQualityMenu.contains(e.target) && !playerQualityGearBtn.contains(e.target)) {
+        closeQualityMenu();
+      }
+    });
+
+    // ---------------------------------------------------------
+    // Clip Trimming Modal Logic
+    // ---------------------------------------------------------
+    function openTrimModal() {
+      if (!clipData) return;
+      mainVideoPlayer.pause();
+
+      const sourceUrl = (clipData.qualities && clipData.qualities['1080p']) || clipData.videoUrl;
+      trimModalVideo.src = sourceUrl;
+      trimModal.classList.remove('hidden');
+
+      trimModalVideo.onloadedmetadata = () => {
+        const dur = trimModalVideo.duration || 10;
+        modalTrimStart.min = '0';
+        modalTrimStart.max = String(dur);
+        modalTrimStart.value = '0';
+
+        modalTrimEnd.min = '0';
+        modalTrimEnd.max = String(dur);
+        modalTrimEnd.value = String(dur);
+
+        updateModalTrimUI();
+      };
+
+      lucide.createIcons();
+    }
+
+    function closeTrimModal() {
+      trimModal.classList.add('hidden');
+      trimModalVideo.pause();
+    }
+
+    function updateModalTrimUI() {
+      const dur = trimModalVideo.duration || 1;
+      let start = parseFloat(modalTrimStart.value) || 0;
+      let end = parseFloat(modalTrimEnd.value) || dur;
+
+      if (start > end - 0.5) {
+        start = Math.max(0, end - 0.5);
+        modalTrimStart.value = String(start);
+      }
+
+      const leftPct = (start / dur) * 100;
+      const rightPct = 100 - (end / dur) * 100;
+      modalTrimTrack.style.left = `${leftPct}%`;
+      modalTrimTrack.style.right = `${rightPct}%`;
+
+      modalTrimStartText.textContent = formatTimeDetailed(start);
+      modalTrimEndText.textContent = formatTimeDetailed(end);
+      modalTrimDuration.textContent = `Отрезок: ${(end - start).toFixed(1)} сек`;
+    }
+
+    modalTrimStart.addEventListener('input', () => {
+      updateModalTrimUI();
+      trimModalVideo.currentTime = parseFloat(modalTrimStart.value);
+    });
+
+    modalTrimEnd.addEventListener('input', () => {
+      updateModalTrimUI();
+      trimModalVideo.currentTime = parseFloat(modalTrimEnd.value);
+    });
+
+    modalSetStartBtn.addEventListener('click', () => {
+      modalTrimStart.value = String(trimModalVideo.currentTime);
+      updateModalTrimUI();
+    });
+
+    modalSetEndBtn.addEventListener('click', () => {
+      modalTrimEnd.value = String(trimModalVideo.currentTime);
+      updateModalTrimUI();
+    });
+
+    modalPlayTrimBtn.addEventListener('click', () => {
+      const start = parseFloat(modalTrimStart.value) || 0;
+      const end = parseFloat(modalTrimEnd.value) || trimModalVideo.duration;
+      trimModalVideo.currentTime = start;
+      trimModalVideo.play();
+
+      const checkEnd = () => {
+        if (trimModalVideo.currentTime >= end) {
+          trimModalVideo.pause();
+          trimModalVideo.removeEventListener('timeupdate', checkEnd);
+        }
+      };
+      trimModalVideo.addEventListener('timeupdate', checkEnd);
+    });
+
+    // Radio toggle for mode
+    document.querySelectorAll('input[name="trimMode"]').forEach((radio) => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'new') {
+          newClipTitleGroup.classList.remove('hidden');
+          modalNewTitle.value = `${clipData.title} (Отрезок)`;
+        } else {
+          newClipTitleGroup.classList.add('hidden');
+        }
+      });
+    });
+
+    openTrimModalBtn.addEventListener('click', openTrimModal);
+    playerTrimShortcutBtn.addEventListener('click', openTrimModal);
+    closeTrimModalBtn.addEventListener('click', closeTrimModal);
+    cancelTrimBtn.addEventListener('click', closeTrimModal);
+
+    // Submit trim request to server
+    submitTrimBtn.addEventListener('click', async () => {
+      if (!currentUser) {
+        showToast('Войдите через Discord для обрезки клипа', 'error');
+        return;
+      }
+
+      const start = parseFloat(modalTrimStart.value) || 0;
+      const end = parseFloat(modalTrimEnd.value) || trimModalVideo.duration;
+      const mode = document.querySelector('input[name="trimMode"]:checked')?.value || 'replace';
+      const newTitle = modalNewTitle.value.trim();
+
+      submitTrimBtn.disabled = true;
+      submitTrimBtnText.textContent = 'Обработка...';
+
+      try {
+        const res = await fetch(`/api/clips/${clipId}/trim`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            startTime: start,
+            endTime: end,
+            mode,
+            newTitle
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('Клип успешно обрезан!', 'success');
+          closeTrimModal();
+          setTimeout(() => {
+            window.location.href = data.url || `/clip/${data.clipId || clipId}`;
+          }, 800);
+        } else {
+          showToast(data.error || 'Ошибка при обрезке клипа', 'error');
+          submitTrimBtn.disabled = false;
+          submitTrimBtnText.textContent = 'Обрезать и сохранить';
+        }
+      } catch (err) {
+        showToast('Ошибка сети при отправке запроса', 'error');
+        submitTrimBtn.disabled = false;
+        submitTrimBtnText.textContent = 'Обрезать и сохранить';
+      }
+    });
+
+    // Fetch Current User
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        currentUser = data.user;
+        renderAuthUI();
+      } catch (err) {
+        renderAuthUI();
+      }
+    }
+
+    // Render Auth UI
+    function renderAuthUI() {
+      if (currentUser) {
+        authContainer.innerHTML = `
+          <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-dark-800/80 border border-white/10">
+            <img src="${ClipActions.escapeHtml(currentUser.avatarUrl)}" alt="" class="w-6 h-6 rounded-full object-cover ring-1 ring-blurple" />
+            <span class="text-xs font-semibold text-white max-w-[120px] truncate">${ClipActions.escapeHtml(currentUser.username)}</span>
+            ${currentUser.isAdmin ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Админ</span>' : ''}
+          </div>
+        `;
+        unauthCommentPrompt.classList.add('hidden');
+        commentForm.classList.remove('hidden');
+        myCommentAvatar.src = currentUser.avatarUrl;
+      } else {
+        authContainer.innerHTML = `
+          <a href="/auth/discord" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blurple hover:bg-blurple-hover text-white text-xs font-semibold shadow-md transition">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+            <span>Войти</span>
+          </a>
+        `;
+        unauthCommentPrompt.classList.remove('hidden');
+        commentForm.classList.add('hidden');
+      }
+      updateOwnerUI();
+      if (clipData) renderComments(clipData.comments || []);
+      lucide.createIcons();
+    }
+
+    // Fetch Clip Data
+    async function loadClip() {
+      if (!clipId) {
+        showNotFound();
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/clips/${clipId}`);
+        if (!res.ok) {
+          showNotFound();
+          return;
+        }
+
+        clipData = await res.json();
+        renderClip();
+      } catch (err) {
+        console.error('Failed to load clip:', err);
+        showNotFound();
+      }
+    }
+
+    function showNotFound() {
+      loadingSkeleton.classList.add('hidden');
+      notFoundBox.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    // Render Clip Details
+    function renderClip() {
+      loadingSkeleton.classList.add('hidden');
+      watchContent.classList.remove('hidden');
+
+      // Page Title
+      document.title = `${clipData.title} — ClipZikor`;
+
+      // Video Source and Quality Setup
+      const initialQualityUrl = getQualityUrl(currentQualityChoice);
+      mainVideoPlayer.src = initialQualityUrl;
+      if (clipData.thumbnailUrl) {
+        mainVideoPlayer.poster = clipData.thumbnailUrl;
+      }
+      updateQualityUI();
+
+      // Metadata
+      clipTitleHeader.textContent = clipData.title;
+      clipGameText.textContent = clipData.game || 'Другое';
+      clipAuthorName.textContent = clipData.author?.username || 'Неизвестный автор';
+      clipAuthorAvatar.src = clipData.author?.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
+      clipDateText.innerHTML = `
+        <i data-lucide="calendar" class="w-3 h-3"></i>
+        <span>${formatRelativeTime(clipData.createdAt)}</span>
+      `;
+      clipViewsCount.textContent = (clipData.views || 1).toLocaleString('ru-RU');
+
+      // Reactions
+      updateReactionsUI(clipData.likesCount, clipData.dislikesCount, clipData.userReaction);
+
+      // Comments
+      renderComments(clipData.comments || []);
+
+      updateOwnerUI();
+      lucide.createIcons();
+    }
+
+    // Update Reaction Counters and Active Styles
+    function updateReactionsUI(likes, dislikes, reaction) {
+      likeCount.textContent = likes;
+      dislikeCount.textContent = dislikes;
+
+      // Reset styles
+      likeBtn.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-dark-900 border text-sm font-semibold transition-all group " +
+        (reaction === 'like'
+          ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 ring-2 ring-emerald-500/30'
+          : 'border-white/10 text-gray-300 hover:border-emerald-500/40 hover:text-emerald-400');
+
+      dislikeBtn.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-dark-900 border text-sm font-semibold transition-all group " +
+        (reaction === 'dislike'
+          ? 'border-rose-500 bg-rose-500/20 text-rose-400 ring-2 ring-rose-500/30'
+          : 'border-white/10 text-gray-300 hover:border-rose-500/40 hover:text-rose-400');
+    }
+
+    // Handle Reaction Clicks
+    async function handleReaction(type) {
+      if (!currentUser) {
+        showToast('Войдите через Discord, чтобы ставить реакции', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/clips/${clipId}/react`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          updateReactionsUI(data.likesCount, data.dislikesCount, data.userReaction);
+        } else {
+          showToast('Не удалось обновить реакцию', 'error');
+        }
+      } catch (err) {
+        showToast('Сетевая ошибка', 'error');
+      }
+    }
+
+    likeBtn.addEventListener('click', () => handleReaction('like'));
+    dislikeBtn.addEventListener('click', () => handleReaction('dislike'));
+
+    // Copy Link Action
+    copyLinkBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setIcon('copyLinkIcon', 'check');
+        copyLinkText.textContent = 'Ссылка скопирована!';
+        copyLinkBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+        copyLinkBtn.classList.remove('bg-blurple', 'hover:bg-blurple-hover');
+        lucide.createIcons();
+
+        showToast('Прямая ссылка скопирована в буфер обмена!', 'success');
+
+        setTimeout(() => {
+          setIcon('copyLinkIcon', 'copy');
+          copyLinkText.textContent = 'Скопировать ссылку';
+          copyLinkBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+          copyLinkBtn.classList.add('bg-blurple', 'hover:bg-blurple-hover');
+          lucide.createIcons();
+        }, 2500);
+      } catch (err) {
+        showToast('Не удалось скопировать ссылку', 'error');
+      }
+    });
+
+    // Render Comments
+    const COMMENT_EDIT_WINDOW_DEFAULT_MS = 24 * 60 * 60 * 1000;
+    let editingCommentId = null;
+
+    // Свои комментарии можно менять и удалять в течение 24 ч, админ может удалить любой
+    // (окончательно всё проверяет сервер)
+    function canEditComment(c) {
+      if (!currentUser || c.userId !== currentUser.id) return false;
+      const windowMs = (clipData && clipData.commentEditWindowMs) || COMMENT_EDIT_WINDOW_DEFAULT_MS;
+      return Date.now() - Date.parse(c.createdAt) <= windowMs;
+    }
+
+    function canDeleteComment(c) {
+      return Boolean(currentUser && (currentUser.isAdmin || canEditComment(c)));
+    }
+
+    function renderComments(comments) {
+      const e = ClipActions.escapeHtml;
+      commentCountBadge.textContent = comments.length;
+
+      if (!comments || comments.length === 0) {
+        commentsFeed.innerHTML = `
+          <div id="noCommentsState" class="h-full flex flex-col items-center justify-center text-center text-gray-500 text-xs py-8">
+            <i data-lucide="messages-square" class="w-8 h-8 mb-2 opacity-40"></i>
+            <p>Пока нет комментариев</p>
+            <p class="text-[11px] text-gray-600">Будьте первым, кто оставит реакцию!</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      commentsFeed.innerHTML = comments
+        .slice()
+        .reverse()
+        .map((c) => {
+          const canEdit = canEditComment(c);
+          const canDelete = canDeleteComment(c);
+          const editing = canEdit && editingCommentId === c.id;
+
+          const body = editing
+            ? `<textarea data-edit="${e(c.id)}" rows="3" maxlength="500"
+                 class="glass-input w-full p-2 text-xs text-white rounded-lg resize-none focus:outline-none">${e(c.text)}</textarea>
+               <div class="flex justify-end gap-2 mt-1.5">
+                 <button type="button" data-action="cancel-edit" data-id="${e(c.id)}"
+                   class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-gray-300 transition">Отмена</button>
+                 <button type="button" data-action="save-comment" data-id="${e(c.id)}"
+                   class="px-2.5 py-1 rounded-lg bg-blurple hover:bg-blurple-hover text-[11px] font-semibold text-white transition">Сохранить</button>
+               </div>`
+            : `<p class="text-xs text-gray-300 break-words leading-relaxed whitespace-pre-wrap">${e(c.text)}</p>
+               ${(canEdit || canDelete) ? `<div class="flex items-center gap-3 mt-1.5">
+                 ${canEdit ? `<button type="button" data-action="edit-comment" data-id="${e(c.id)}"
+                   class="text-[11px] text-gray-500 hover:text-white transition">Изменить</button>` : ''}
+                 ${canDelete ? `<button type="button" data-action="delete-comment" data-id="${e(c.id)}"
+                   class="text-[11px] text-gray-500 hover:text-rose-400 transition">Удалить</button>` : ''}
+               </div>` : ''}`;
+
+          return `
+          <div class="flex gap-2.5 p-2.5 rounded-xl bg-dark-900/60 border border-white/5 hover:border-white/10 transition">
+            <img src="${e(c.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png')}" alt="" class="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-white/10" />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-semibold text-white truncate">${e(c.username)}</span>
+                <span class="text-[10px] text-gray-500 shrink-0">${e(formatRelativeTime(c.createdAt))}${c.editedAt ? ' · изменён' : ''}</span>
+              </div>
+              ${body}
+            </div>
+          </div>`;
+        })
+        .join('');
+
+      lucide.createIcons();
+    }
+
+    // Edit / delete own comments (delegated)
+    commentsFeed.addEventListener('click', async (ev) => {
+      const btn = ev.target.closest('[data-action]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+
+      if (action === 'edit-comment') {
+        editingCommentId = id;
+        renderComments(clipData.comments);
+        const ta = commentsFeed.querySelector('textarea[data-edit]');
+        if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+        return;
+      }
+
+      if (action === 'cancel-edit') {
+        editingCommentId = null;
+        renderComments(clipData.comments);
+        return;
+      }
+
+      if (action === 'save-comment') {
+        const ta = commentsFeed.querySelector('textarea[data-edit]');
+        const text = ta ? ta.value.trim() : '';
+        if (!text) { showToast('Комментарий не может быть пустым', 'error'); return; }
+        btn.disabled = true;
+        try {
+          const res = await fetch(`/api/clips/${clipId}/comments/${encodeURIComponent(id)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            const i = clipData.comments.findIndex((c) => c.id === id);
+            if (i !== -1) clipData.comments[i] = data.comment;
+            editingCommentId = null;
+            renderComments(clipData.comments);
+            showToast('Комментарий изменён', 'success');
+          } else {
+            showToast(data.error || 'Не удалось изменить комментарий', 'error');
+            if (res.status === 403) { editingCommentId = null; renderComments(clipData.comments); }
+            btn.disabled = false;
+          }
+        } catch (err) {
+          showToast('Сетевая ошибка', 'error');
+          btn.disabled = false;
+        }
+        return;
+      }
+
+      if (action === 'delete-comment') {
+        if (!confirm('Удалить комментарий?')) return;
+        try {
+          const res = await fetch(`/api/clips/${clipId}/comments/${encodeURIComponent(id)}`, { method: 'DELETE' });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            clipData.comments = clipData.comments.filter((c) => c.id !== id);
+            renderComments(clipData.comments);
+            showToast('Комментарий удалён', 'success');
+          } else {
+            showToast(data.error || 'Не удалось удалить комментарий', 'error');
+          }
+        } catch (err) {
+          showToast('Сетевая ошибка', 'error');
+        }
+      }
+    });
+
+    // Кнопки автора под названием клипа
+    function updateOwnerUI() {
+      const box = document.getElementById('clipOwnerActions');
+      if (!box) return;
+      // автор клипа или админ (сервер сам считает canManage для текущего пользователя)
+      const canManage = Boolean(currentUser && clipData && clipData.canManage);
+      box.classList.toggle('hidden', !canManage);
+      box.classList.toggle('flex', canManage);
+    }
+
+    document.getElementById('editClipBtn').addEventListener('click', () => {
+      if (!clipData) return;
+      ClipActions.edit({ id: clipData.id, title: clipData.title, game: clipData.game }, (saved) => {
+        clipData.title = saved.title;
+        clipData.game = saved.game;
+        clipTitleHeader.textContent = saved.title;
+        clipGameText.textContent = saved.game || 'Другое';
+        document.title = `${saved.title} — ClipZikor`;
+      });
+    });
+
+    document.getElementById('deleteClipBtn').addEventListener('click', () => {
+      if (!clipData) return;
+      ClipActions.remove({ id: clipData.id, title: clipData.title }, () => {
+        setTimeout(() => { window.location.href = '/gallery'; }, 700);
+      });
+    });
+
+    // Escape HTML helper
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.innerText = str;
+      return div.innerHTML;
+    }
+
+    // Submit New Comment
+    commentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = commentInput.value.trim();
+
+      if (!text) return;
+      if (!currentUser) {
+        showToast('Войдите через Discord, чтобы оставить комментарий', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('submitCommentBtn');
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/clips/${clipId}/comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          commentInput.value = '';
+          clipData.comments.push(data.comment);
+          renderComments(clipData.comments);
+          showToast('Комментарий добавлен', 'success');
+        } else {
+          showToast('Ошибка при добавлении комментария', 'error');
+        }
+      } catch (err) {
+        showToast('Сетевая ошибка', 'error');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Init
+    checkAuth();
+    loadClip();
+  </script>
+</body>
+
+</html>

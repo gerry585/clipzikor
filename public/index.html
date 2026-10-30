@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClipZikor — Хостинг клипов сообщества</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="description"
+    content="Удобный и быстрый сервис для обмена лучшими игровыми клипами в Discord сообществе" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            blurple: {
+              DEFAULT: '#5865F2',
+              hover: '#4752C4',
+              light: '#7983F5',
+              dark: '#3C45A5'
+            },
+            dark: {
+              950: '#0a0b0e',
+              900: '#101116',
+              850: '#161720',
+              800: '#1d1f2b',
+              700: '#282b3c',
+              600: '#383d54'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 25px rgba(88, 101, 242, 0.6)' },
+              '50%': { boxShadow: '0 0 5px rgba(88, 101, 242, 0.2)' }
+            },
+            shake: {
+              '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+              '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+              '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+              '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Glassmorphism and Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #101116;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #282b3c;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #5865F2;
+    }
+
+    .glass-panel {
+      background: rgba(22, 23, 32, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-input {
+      background: rgba(16, 17, 22, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .glass-input:focus {
+      border-color: #5865F2;
+      box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.25);
+    }
+
+    .drag-active {
+      border-color: #5865F2 !important;
+      background: rgba(88, 101, 242, 0.08) !important;
+      transform: scale(1.01);
+    }
+  </style>
+</head>
+
+<body
+  class="bg-dark-950 text-gray-100 min-h-screen flex flex-col font-sans selection:bg-blurple selection:text-white relative overflow-x-hidden">
+
+  <!-- Ambient Background Glows -->
+  <div
+    class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blurple/10 blur-[140px] pointer-events-none -z-10">
+  </div>
+  <div
+    class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/10 blur-[140px] pointer-events-none -z-10">
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="w-full border-b border-white/5 bg-dark-900/60 backdrop-blur-md sticky top-0 z-40 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
+
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <!-- Свой логотип: положи файл logo.png рядом с сайтом (/logo.png).
+             Если файла нет — показывается старая иконка. -->
+        <img src="/logo.png" alt="ClipZikor"
+          class="h-10 w-auto max-w-[160px] object-contain group-hover:scale-105 transition-transform"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div style="display:none"
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blurple to-indigo-500 items-center justify-center shadow-lg shadow-blurple/25 group-hover:scale-105 transition-transform">
+          <i data-lucide="clapperboard" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold tracking-tight text-white">Clip<span class="text-blurple">Zikor</span></span>
+          <p class="text-xs text-gray-400 hidden sm:block">Хостинг клипов для Discord</p>
+        </div>
+      </a>
+
+      <!-- User Auth State Navigation -->
+      <div class="flex items-center gap-3">
+        <a href="/gallery"
+          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 hover:text-white border border-white/10 text-sm font-medium transition">
+          <i data-lucide="layout-grid" class="w-4 h-4 text-blurple"></i>
+          <span class="hidden sm:inline">Галерея</span>
+        </a>
+        <div id="authContainer" class="flex items-center gap-3">
+          <!-- Loading Skeleton -->
+          <div class="w-32 h-10 bg-dark-800 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Drag Overlay (Full Window Dropzone) -->
+  <div id="globalDropOverlay"
+    class="fixed inset-0 z-50 bg-dark-950/90 backdrop-blur-md border-4 border-dashed border-blurple flex flex-col items-center justify-center transition-all opacity-0 pointer-events-none duration-200">
+    <div class="w-24 h-24 rounded-3xl bg-blurple/20 text-blurple flex items-center justify-center mb-6 animate-bounce">
+      <i data-lucide="upload-cloud" class="w-12 h-12"></i>
+    </div>
+    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">Отпустите файл для загрузки</h2>
+    <p class="text-gray-400 text-sm sm:text-base">Поддерживаются форматы MP4, WebM, MOV</p>
+  </div>
+
+  <!-- Main Content: Vertically Centered Upload Hub -->
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div class="w-full max-w-2xl">
+
+      <!-- Upload Card Container -->
+      <div id="uploadCard"
+        class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-all duration-300">
+
+        <!-- Glowing Accent Top Line -->
+        <div
+          class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blurple to-transparent opacity-80">
+        </div>
+
+        <!-- Card Header -->
+        <div class="text-center mb-6">
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Загрузить игровой клип</h1>
+          <p class="text-gray-400 text-sm mt-1">Опубликуйте лучший игровой момент в Discord сообществе</p>
+        </div>
+
+        <!-- STATE 1: UNAUTHORIZED LOCK OVERLAY -->
+        <div id="unauthLockBox"
+          class="hidden flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed border-white/10 rounded-2xl bg-dark-900/60">
+          <div
+            class="w-16 h-16 rounded-2xl bg-dark-800 border border-white/10 flex items-center justify-center text-amber-400 mb-4 shadow-lg shadow-amber-500/10">
+            <i data-lucide="lock" class="w-8 h-8"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Требуется авторизация</h3>
+          <p class="text-gray-400 text-sm max-w-sm mb-6">
+            Загрузка клипов и галерея доступны только участникам нашего Discord-сервера. Авторизуйтесь через Discord — мы проверим, что вы состоите на сервере.
+          </p>
+          <a id="lockLoginBtn" href="/auth/discord"
+            class="flex items-center gap-2.5 px-6 py-3 rounded-xl bg-blurple hover:bg-blurple-hover text-white font-medium shadow-lg shadow-blurple/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path
+                d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+            </svg>
+            <span>Войти через Discord</span>
+          </a>
+        </div>
+
+        <!-- STATE 2: AUTHORIZED UPLOAD INTERFACE -->
+        <div id="authUploadBox" class="space-y-6">
+
+          <!-- Dropzone Area (Initial File Selection) -->
+          <div id="dropZone"
+            class="group relative border-2 border-dashed border-white/15 hover:border-blurple/60 rounded-2xl p-8 text-center cursor-pointer bg-dark-900/40 hover:bg-dark-900/70 transition-all duration-200">
+            <input type="file" id="videoFileInput" accept="video/mp4,video/webm,video/quicktime,video/x-matroska"
+              class="hidden" />
+
+            <div id="dropZonePlaceholder" class="flex flex-col items-center justify-center">
+              <div
+                class="w-16 h-16 rounded-2xl bg-dark-800/80 border border-white/10 flex items-center justify-center text-blurple group-hover:scale-110 group-hover:bg-blurple group-hover:text-white transition-all duration-200 mb-4 shadow-lg">
+                <i data-lucide="film" class="w-8 h-8"></i>
+              </div>
+              <p class="text-base font-semibold text-white mb-1">
+                Нажмите для выбора клипа или перетащите его сюда
+              </p>
+              <p class="text-xs text-gray-400 mb-3">
+                MP4, WebM, MOV до 250 МБ
+              </p>
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300 font-medium group-hover:border-blurple/40">
+                <i data-lucide="folder-open" class="w-3.5 h-3.5 text-blurple"></i>
+                Обзор файлов
+              </span>
+            </div>
+
+            <!-- In-Card Video Preview (Visible after file is chosen) -->
+            <div id="previewContainer" class="hidden flex flex-col space-y-4">
+              <div
+                class="relative rounded-xl overflow-hidden bg-black aspect-video border border-white/10 shadow-lg group/video">
+                <video id="videoPreview" controls class="w-full h-full object-contain"></video>
+                <button id="changeFileBtn" type="button"
+                  class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-dark-900/80 backdrop-blur border border-white/20 text-xs font-medium text-white hover:bg-dark-800 transition flex items-center gap-1.5 shadow-md">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  Заменить файл
+                </button>
+              </div>
+              <div class="flex items-center justify-between text-xs text-gray-400 px-1">
+                <span id="fileSizeBadge" class="flex items-center gap-1">
+                  <i data-lucide="hard-drive" class="w-3.5 h-3.5 text-blurple"></i>
+                  -- МБ
+                </span>
+                <span id="fileDurationBadge" class="flex items-center gap-1">
+                  <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  --:--
+                </span>
+              </div>
+
+              <!-- Trim panel: выбор отрезка ДО публикации -->
+              <div id="trimPanel" class="hidden text-left rounded-xl border border-white/10 bg-dark-900/60 p-4 space-y-3 cursor-default">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2 text-sm font-semibold text-white">
+                    <i data-lucide="scissors" class="w-4 h-4 text-blurple"></i>
+                    <span>Обрезка клипа</span>
+                  </div>
+                  <button id="trimResetBtn" type="button"
+                    class="text-xs text-gray-400 hover:text-white transition">Сбросить</button>
+                </div>
+
+                <div class="px-2">
+                  <div id="trimTrack" class="relative h-12 select-none touch-none cursor-pointer">
+                    <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-white/10"></div>
+                    <div id="trimRange" class="absolute top-1/2 -translate-y-1/2 h-3 rounded-full bg-blurple/70"></div>
+                    <div id="trimPlayhead"
+                      class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-0.5 h-8 bg-white/80 pointer-events-none"></div>
+                    <div id="trimHandleStart" role="slider" tabindex="0" aria-label="Начало клипа"
+                      class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-10 rounded-md bg-white border-2 border-blurple shadow-lg cursor-ew-resize focus:outline-none focus:ring-2 focus:ring-blurple-light"></div>
+                    <div id="trimHandleEnd" role="slider" tabindex="0" aria-label="Конец клипа"
+                      class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-10 rounded-md bg-white border-2 border-blurple shadow-lg cursor-ew-resize focus:outline-none focus:ring-2 focus:ring-blurple-light"></div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-xs items-start">
+                  <div class="space-y-1">
+                    <div class="text-gray-400">Начало</div>
+                    <div id="trimStartLabel" class="font-mono text-white text-sm">0:00.0</div>
+                    <button id="trimSetStartBtn" type="button"
+                      class="inline-flex items-center px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-gray-300 hover:text-white transition">Взять с плеера</button>
+                  </div>
+                  <div class="space-y-1 text-center">
+                    <div class="text-gray-400">Длительность</div>
+                    <div id="trimLengthLabel" class="font-mono text-emerald-400 text-sm">0:00.0</div>
+                  </div>
+                  <div class="space-y-1 flex flex-col items-end">
+                    <div class="text-gray-400">Конец</div>
+                    <div id="trimEndLabel" class="font-mono text-white text-sm">0:00.0</div>
+                    <button id="trimSetEndBtn" type="button"
+                      class="inline-flex items-center px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-gray-300 hover:text-white transition">Взять с плеера</button>
+                  </div>
+                </div>
+
+                <p id="trimSummary" class="text-[11px] text-gray-400"></p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Upload Form Fields (Title & Game) -->
+          <div id="formFields" class="hidden space-y-4">
+
+            <!-- Clip Title Input -->
+            <div>
+              <label for="clipTitle" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+                Название клипа
+              </label>
+              <div class="relative">
+                <input type="text" id="clipTitle" placeholder="Например: Невероятный клатч 1v4" maxlength="100"
+                  class="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none" />
+                <button id="clearTitleBtn" type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition hidden">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Game Category Select -->
+            <div>
+              <label for="gameSelect" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
+                Игра
+              </label>
+              <div class="relative">
+                <select id="gameSelect"
+                  class="glass-input w-full px-4 py-3 rounded-xl text-white text-sm focus:outline-none appearance-none cursor-pointer">
+                  <option value="CS2" class="bg-dark-900 text-white">Counter-Strike 2</option>
+                  <option value="Dota 2" class="bg-dark-900 text-white">Dota 2</option>
+                  <option value="Valorant" class="bg-dark-900 text-white">Valorant</option>
+                  <option value="Minecraft" class="bg-dark-900 text-white">Minecraft</option>
+                  <option value="Roblox" class="bg-dark-900 text-white">Roblox</option>
+                  <option value="Palworld" class="bg-dark-900 text-white">Palworld</option>
+                  <option value="Apex Legends" class="bg-dark-900 text-white">Apex Legends</option>
+                  <option value="GTA V" class="bg-dark-900 text-white">Grand Theft Auto V</option>
+                  <option value="Rust" class="bg-dark-900 text-white">Rust</option>
+                  <option value="Lethal Company" class="bg-dark-900 text-white">Lethal Company</option>
+                  <option value="Fortnite" class="bg-dark-900 text-white">Fortnite</option>
+                  <option value="Другое" class="bg-dark-900 text-white" selected>Другое</option>
+                </select>
+                <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload Action Button -->
+            <button id="submitClipBtn" type="button"
+              class="w-full mt-2 py-3.5 px-6 rounded-xl bg-gradient-to-r from-blurple to-indigo-600 hover:from-blurple-hover hover:to-indigo-500 text-white font-semibold text-sm shadow-xl shadow-blurple/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99]">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>Опубликовать клип</span>
+            </button>
+
+          </div>
+
+          <!-- Progress / Transcoding State Indicator -->
+          <div id="progressContainer" class="hidden space-y-3 pt-2">
+            <div class="flex items-center justify-between text-xs">
+              <span id="progressStatusText" class="font-medium text-blurple-light flex items-center gap-2">
+                <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                <span>Загрузка файла на сервер...</span>
+              </span>
+              <span id="progressPercent" class="font-bold text-white">0%</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full h-2.5 rounded-full bg-dark-900 overflow-hidden border border-white/5 relative">
+              <div id="progressBar"
+                class="h-full bg-gradient-to-r from-blurple via-indigo-500 to-emerald-400 rounded-full transition-all duration-300 w-0">
+              </div>
+            </div>
+            <p class="text-[11px] text-gray-400 text-center">
+              Пожалуйста, не закрывайте вкладку. Видео обрабатывается для быстрого стриминга во всех разрешениях.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- Client JavaScript Logic -->
+  <script>
+    // State
+    let currentUser = null;
+    let selectedFile = null;
+    let isConfigured = true;
+
+    // DOM Elements
+    const authContainer = document.getElementById('authContainer');
+    const unauthLockBox = document.getElementById('unauthLockBox');
+    const authUploadBox = document.getElementById('authUploadBox');
+    const dropZone = document.getElementById('dropZone');
+    const dropZonePlaceholder = document.getElementById('dropZonePlaceholder');
+    const videoFileInput = document.getElementById('videoFileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const videoPreview = document.getElementById('videoPreview');
+    const changeFileBtn = document.getElementById('changeFileBtn');
+    const fileSizeBadge = document.getElementById('fileSizeBadge');
+    const fileDurationBadge = document.getElementById('fileDurationBadge');
+    const formFields = document.getElementById('formFields');
+    const clipTitle = document.getElementById('clipTitle');
+    const clearTitleBtn = document.getElementById('clearTitleBtn');
+    const gameSelect = document.getElementById('gameSelect');
+    const submitClipBtn = document.getElementById('submitClipBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressStatusText = document.getElementById('progressStatusText');
+    const progressPercent = document.getElementById('progressPercent');
+    const progressBar = document.getElementById('progressBar');
+    const globalDropOverlay = document.getElementById('globalDropOverlay');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // Show Toast Notification
+    function showToast(message, type = 'info', action = null) {
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm transition-all transform translate-y-4 opacity-0 duration-300 max-w-md ${type === 'success'
+          ? 'bg-dark-900 border-emerald-500/40 text-white'
+          : type === 'error'
+            ? 'bg-dark-900 border-rose-500/40 text-white'
+            : 'bg-dark-900 border-blurple/40 text-white'
+        }`;
+
+      const iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-triangle' : 'info';
+      const iconColor = type === 'success' ? 'text-emerald-400' : type === 'error' ? 'text-rose-400' : 'text-blurple';
+
+      toast.innerHTML = `
+        <div class="shrink-0 ${iconColor}">
+          <i data-lucide="${iconName}" class="w-5 h-5"></i>
+        </div>
+        <div class="flex-1 font-medium">${message}</div>
+        ${action
+          ? `<a href="${action.url}" class="shrink-0 px-2.5 py-1 rounded-lg bg-blurple hover:bg-blurple-hover text-white text-xs font-semibold transition">${action.label}</a>`
+          : ''
+        }
+      `;
+
+      toastContainer.appendChild(toast);
+      lucide.createIcons();
+
+      // Trigger transition
+      setTimeout(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      }, 20);
+
+      // Remove after 5s
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+
+    // Format Bytes helper
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'КБ', 'МБ', 'ГБ'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Format Seconds to MM:SS
+    function formatTime(seconds) {
+      if (!seconds || isNaN(seconds)) return '00:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Fetch Current User Auth Status
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        currentUser = data.user;
+        isConfigured = data.isDiscordConfigured;
+
+        renderAuthUI();
+      } catch (err) {
+        console.error('Failed to check auth:', err);
+        renderAuthUI();
+      }
+    }
+
+    // Render Auth Bar & Lock Status
+    function renderAuthUI() {
+      if (currentUser) {
+        // Logged In
+        authContainer.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-dark-800/80 border border-white/10">
+              <div class="relative">
+                <img src="${currentUser.avatarUrl}" alt="${currentUser.username}" class="w-7 h-7 rounded-full object-cover ring-2 ring-blurple/50" />
+                <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-dark-900"></span>
+              </div>
+              <span class="text-sm font-semibold text-white max-w-[120px] sm:max-w-[160px] truncate">${currentUser.username}</span>
+            </div>
+            <a href="/auth/logout" title="Выйти" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </a>
+          </div>
+        `;
+        unauthLockBox.classList.add('hidden');
+        authUploadBox.classList.remove('hidden');
+      } else {
+        // Not Logged In
+        const devLoginButton = !isConfigured
+          ? `<a href="/auth/dev-login" class="text-xs px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 font-semibold transition flex items-center gap-1.5">
+               <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+               <span>Демо-вход</span>
+             </a>`
+          : '';
+
+        authContainer.innerHTML = `
+          <div class="flex items-center gap-2">
+            ${devLoginButton}
+            <a id="headerLoginBtn" href="/auth/discord" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-blurple hover:bg-blurple-hover text-white text-sm font-semibold shadow-lg shadow-blurple/25 transition-all hover:scale-[1.02]">
+              <i data-lucide="log-in" class="w-4 h-4"></i>
+              <span>Войти через Discord</span>
+            </a>
+          </div>
+        `;
+        unauthLockBox.classList.remove('hidden');
+        authUploadBox.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    // Highlight login button when unauthorized drag happens
+    function highlightLoginButton() {
+      const headerLoginBtn = document.getElementById('headerLoginBtn');
+      const lockLoginBtn = document.getElementById('lockLoginBtn');
+
+      [headerLoginBtn, lockLoginBtn].forEach((btn) => {
+        if (btn) {
+          btn.classList.add('animate-shake', 'ring-4', 'ring-blurple', 'shadow-blurple/60');
+          setTimeout(() => {
+            btn.classList.remove('animate-shake', 'ring-4', 'ring-blurple', 'shadow-blurple/60');
+          }, 800);
+        }
+      });
+
+      showToast('Для загрузки клипа необходимо войти через Discord!', 'error');
+    }
+
+    // ---------------------------------------------------------
+    // Trim: выбор отрезка до публикации (применяется на сервере)
+    // ---------------------------------------------------------
+    const trimPanel = document.getElementById('trimPanel');
+    const trimTrack = document.getElementById('trimTrack');
+    const trimRange = document.getElementById('trimRange');
+    const trimPlayhead = document.getElementById('trimPlayhead');
+    const trimHandleStart = document.getElementById('trimHandleStart');
+    const trimHandleEnd = document.getElementById('trimHandleEnd');
+    const trimStartLabel = document.getElementById('trimStartLabel');
+    const trimEndLabel = document.getElementById('trimEndLabel');
+    const trimLengthLabel = document.getElementById('trimLengthLabel');
+    const trimSummary = document.getElementById('trimSummary');
+    const trimSetStartBtn = document.getElementById('trimSetStartBtn');
+    const trimSetEndBtn = document.getElementById('trimSetEndBtn');
+    const trimResetBtn = document.getElementById('trimResetBtn');
+
+    const TRIM_MIN = 0.5; // минимальная длина клипа, сек
+    let trimActive = false;
+    let trimDuration = 0;
+    let trimStart = 0;
+    let trimEnd = 0;
+    let trimDrag = null;
+    let trimRaf = null;
+
+    function fmtTrim(sec) {
+      const tenths = Math.round(Math.max(0, sec) * 10);
+      const m = Math.floor(tenths / 600);
+      const s = (tenths % 600) / 10;
+      return `${m}:${s.toFixed(1).padStart(4, '0')}`;
+    }
+
+    function trimGap() {
+      return Math.min(TRIM_MIN, trimDuration / 2);
+    }
+
+    function isTrimmed() {
+      return trimActive && (trimStart > 0.05 || trimEnd < trimDuration - 0.05);
+    }
+
+    function renderTrim() {
+      const sp = (trimStart / trimDuration) * 100;
+      const ep = (trimEnd / trimDuration) * 100;
+      trimHandleStart.style.left = sp + '%';
+      trimHandleEnd.style.left = ep + '%';
+      trimRange.style.left = sp + '%';
+      trimRange.style.width = (ep - sp) + '%';
+      trimStartLabel.textContent = fmtTrim(trimStart);
+      trimEndLabel.textContent = fmtTrim(trimEnd);
+      trimLengthLabel.textContent = fmtTrim(trimEnd - trimStart);
+      trimHandleStart.setAttribute('aria-valuenow', trimStart.toFixed(1));
+      trimHandleEnd.setAttribute('aria-valuenow', trimEnd.toFixed(1));
+      trimSummary.textContent = isTrimmed()
+        ? `Будет опубликован фрагмент ${fmtTrim(trimStart)} – ${fmtTrim(trimEnd)} (из ${fmtTrim(trimDuration)}). Обрезка применится при публикации.`
+        : 'Передвигайте ползунки, чтобы выбрать нужный отрезок. Без изменений клип опубликуется целиком.';
+    }
+
+    function setTrimPoint(which, t) {
+      const gap = trimGap();
+      if (which === 'start') {
+        trimStart = Math.min(Math.max(0, t), trimEnd - gap);
+      } else {
+        trimEnd = Math.max(Math.min(trimDuration, t), trimStart + gap);
+      }
+      renderTrim();
+    }
+
+    function seekPreview(t) {
+      videoPreview.pause();
+      try { videoPreview.currentTime = t; } catch (e) { }
+    }
+
+    function trimTimeFromEvent(e) {
+      const r = trimTrack.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+      return p * trimDuration;
+    }
+
+    function trimTick() {
+      if (!trimActive) return;
+      const t = videoPreview.currentTime || 0;
+      trimPlayhead.style.left = Math.min(100, Math.max(0, (t / trimDuration) * 100)) + '%';
+      // Предпросмотр играет только внутри выбранного отрезка
+      if (!videoPreview.paused && !trimDrag && t >= trimEnd - 0.03) {
+        videoPreview.pause();
+        videoPreview.currentTime = trimStart;
+      }
+      trimRaf = requestAnimationFrame(trimTick);
+    }
+
+    function resetTrim() {
+      trimActive = false;
+      trimDrag = null;
+      if (trimRaf) cancelAnimationFrame(trimRaf);
+      trimRaf = null;
+      trimPanel.classList.add('hidden');
+    }
+
+    function initTrim(duration) {
+      resetTrim();
+      if (!isFinite(duration) || duration <= 1) return; // длительность неизвестна или клип слишком короткий
+      trimActive = true;
+      trimDuration = duration;
+      trimStart = 0;
+      trimEnd = duration;
+      trimPanel.classList.remove('hidden');
+      renderTrim();
+      trimTick();
+    }
+
+    trimTrack.addEventListener('pointerdown', (e) => {
+      if (!trimActive) return;
+      e.preventDefault();
+      const t = trimTimeFromEvent(e);
+      let which;
+      if (e.target === trimHandleStart) which = 'start';
+      else if (e.target === trimHandleEnd) which = 'end';
+      else which = Math.abs(t - trimStart) <= Math.abs(t - trimEnd) ? 'start' : 'end';
+      trimDrag = which;
+      trimTrack.setPointerCapture(e.pointerId);
+      if (e.target !== trimHandleStart && e.target !== trimHandleEnd) {
+        setTrimPoint(which, t);
+        seekPreview(which === 'start' ? trimStart : Math.max(trimStart, trimEnd - 0.05));
+      }
+      (which === 'start' ? trimHandleStart : trimHandleEnd).focus();
+    });
+
+    trimTrack.addEventListener('pointermove', (e) => {
+      if (!trimDrag) return;
+      setTrimPoint(trimDrag, trimTimeFromEvent(e));
+      seekPreview(trimDrag === 'start' ? trimStart : Math.max(trimStart, trimEnd - 0.05));
+    });
+
+    const endTrimDrag = (e) => {
+      trimDrag = null;
+      try { trimTrack.releasePointerCapture(e.pointerId); } catch (err) { }
+    };
+    trimTrack.addEventListener('pointerup', endTrimDrag);
+    trimTrack.addEventListener('pointercancel', endTrimDrag);
+
+    // Клавиатура: стрелки двигают ползунок на 0.1 с (Shift — на 1 с)
+    [[trimHandleStart, 'start'], [trimHandleEnd, 'end']].forEach(([el, which]) => {
+      el.addEventListener('keydown', (e) => {
+        if (!trimActive) return;
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        const step = (e.shiftKey ? 1 : 0.1) * (e.key === 'ArrowLeft' ? -1 : 1);
+        setTrimPoint(which, (which === 'start' ? trimStart : trimEnd) + step);
+        seekPreview(which === 'start' ? trimStart : Math.max(trimStart, trimEnd - 0.05));
+      });
+    });
+
+    trimSetStartBtn.addEventListener('click', () => {
+      if (trimActive) setTrimPoint('start', videoPreview.currentTime);
+    });
+    trimSetEndBtn.addEventListener('click', () => {
+      if (trimActive) setTrimPoint('end', videoPreview.currentTime);
+    });
+    trimResetBtn.addEventListener('click', () => {
+      if (!trimActive) return;
+      trimStart = 0;
+      trimEnd = trimDuration;
+      renderTrim();
+      seekPreview(0);
+    });
+
+    videoPreview.addEventListener('play', () => {
+      if (!trimActive) return;
+      const t = videoPreview.currentTime;
+      if (t < trimStart - 0.05 || t >= trimEnd - 0.05) videoPreview.currentTime = trimStart;
+    });
+
+    // Handle File Selection
+    function handleFile(file) {
+      if (!currentUser) {
+        highlightLoginButton();
+        return;
+      }
+
+      if (!file) return;
+
+      // Validate video MIME type or extension
+      if (!file.type.startsWith('video/') && !/\.(mp4|webm|mov|mkv)$/i.test(file.name)) {
+        showToast('Пожалуйста, выберите корректный видеофайл (MP4, WebM, MOV)', 'error');
+        return;
+      }
+
+      if (file.size > 250 * 1024 * 1024) {
+        showToast('Размер файла превышает лимит в 250 МБ', 'error');
+        return;
+      }
+
+      selectedFile = file;
+
+      // Auto-populate Title from filename without extension
+      const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ');
+      clipTitle.value = fileNameWithoutExt.slice(0, 100);
+      clearTitleBtn.classList.remove('hidden');
+
+      // Setup Video Preview
+      const videoUrl = URL.createObjectURL(file);
+      videoPreview.src = videoUrl;
+      videoPreview.onloadedmetadata = () => {
+        fileDurationBadge.innerHTML = `<i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400"></i> ${formatTime(videoPreview.duration)}`;
+        fileSizeBadge.innerHTML = `<i data-lucide="hard-drive" class="w-3.5 h-3.5 text-blurple"></i> ${formatBytes(file.size)}`;
+        initTrim(videoPreview.duration);
+        lucide.createIcons();
+      };
+
+      // Switch view
+      dropZonePlaceholder.classList.add('hidden');
+      previewContainer.classList.remove('hidden');
+      formFields.classList.remove('hidden');
+      dropZone.classList.remove('hover:border-blurple/60');
+      dropZone.classList.add('border-white/10');
+    }
+
+    // Reset Form
+    function resetForm() {
+      resetTrim();
+      selectedFile = null;
+      videoFileInput.value = '';
+      videoPreview.src = '';
+      previewContainer.classList.add('hidden');
+      dropZonePlaceholder.classList.remove('hidden');
+      formFields.classList.add('hidden');
+      progressContainer.classList.add('hidden');
+      submitClipBtn.disabled = false;
+      progressBar.style.width = '0%';
+      progressPercent.textContent = '0%';
+      clipTitle.value = '';
+    }
+
+    // Global Drag & Drop Handlers
+    let dragCounter = 0;
+
+    window.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      dragCounter++;
+      if (e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        if (currentUser) {
+          globalDropOverlay.classList.remove('opacity-0', 'pointer-events-none');
+          globalDropOverlay.classList.add('opacity-100');
+        } else {
+          highlightLoginButton();
+        }
+      }
+    });
+
+    window.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        globalDropOverlay.classList.remove('opacity-100');
+        globalDropOverlay.classList.add('opacity-0', 'pointer-events-none');
+      }
+    });
+
+    window.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      globalDropOverlay.classList.remove('opacity-100');
+      globalDropOverlay.classList.add('opacity-0', 'pointer-events-none');
+
+      if (!currentUser) {
+        highlightLoginButton();
+        return;
+      }
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // Dropzone Click
+    dropZone.addEventListener('click', (e) => {
+      if (e.target.closest('#previewContainer') || e.target.closest('#changeFileBtn')) {
+        return;
+      }
+      if (!currentUser) {
+        highlightLoginButton();
+        return;
+      }
+      videoFileInput.click();
+    });
+
+    changeFileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      videoFileInput.click();
+    });
+
+    videoFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    // Clear Title Button
+    clearTitleBtn.addEventListener('click', () => {
+      clipTitle.value = '';
+      clearTitleBtn.classList.add('hidden');
+      clipTitle.focus();
+    });
+
+    clipTitle.addEventListener('input', () => {
+      if (clipTitle.value.trim().length > 0) {
+        clearTitleBtn.classList.remove('hidden');
+      } else {
+        clearTitleBtn.classList.add('hidden');
+      }
+    });
+
+    // Send / Submit Clip
+    submitClipBtn.addEventListener('click', () => {
+      if (!selectedFile) {
+        showToast('Выберите видеофайл для загрузки', 'error');
+        return;
+      }
+
+      const title = clipTitle.value.trim() || 'Новый клип';
+      const game = gameSelect.value || 'Другое';
+
+      // Prepare Form Data
+      const formData = new FormData();
+      formData.append('video', selectedFile);
+      formData.append('title', title);
+      formData.append('game', game);
+      // Обрезка: сервер вырежет выбранный отрезок при обработке
+      if (trimActive) {
+        if (trimStart > 0.05) formData.append('trimStart', trimStart.toFixed(2));
+        if (trimEnd < trimDuration - 0.05) formData.append('trimEnd', trimEnd.toFixed(2));
+      }
+
+      // Disable inputs and show progress
+      submitClipBtn.disabled = true;
+      formFields.classList.add('hidden');
+      progressContainer.classList.remove('hidden');
+      progressBar.style.width = '5%';
+      progressPercent.textContent = '5%';
+      progressStatusText.innerHTML = `
+        <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blurple"></i>
+        <span>Загрузка видео на сервер...</span>
+      `;
+      lucide.createIcons();
+
+      // XMLHttpRequest for accurate upload progress
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload', true);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 90);
+          progressBar.style.width = `${percent}%`;
+          progressPercent.textContent = `${percent}%`;
+
+          if (percent >= 90) {
+            progressStatusText.innerHTML = `
+              <i data-lucide="cpu" class="w-4 h-4 animate-pulse text-indigo-400"></i>
+              <span>Обработка видео и подготовка качеств...</span>
+            `;
+            lucide.createIcons();
+          }
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            progressBar.style.width = '100%';
+            progressPercent.textContent = '100%';
+            progressStatusText.innerHTML = `
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+              <span class="text-emerald-400">Клип готов!</span>
+            `;
+            lucide.createIcons();
+
+            showToast('Клип успешно опубликован!', 'success', {
+              label: 'Смотреть',
+              url: data.url
+            });
+
+            setTimeout(() => {
+              resetForm();
+            }, 1200);
+          } catch (e) {
+            showToast('Не удалось обработать ответ сервера', 'error');
+            resetForm();
+          }
+        } else {
+          let errMessage = 'Ошибка при загрузке видео';
+          try {
+            const err = JSON.parse(xhr.responseText);
+            if (err.error) errMessage = err.error;
+          } catch (e) { }
+          showToast(errMessage, 'error');
+          resetForm();
+        }
+      };
+
+      xhr.onerror = () => {
+        showToast('Сетевая ошибка при отправке видео', 'error');
+        resetForm();
+      };
+
+      xhr.send(formData);
+    });
+
+    // Check for query parameters (e.g. error notifications)
+    const urlParams = new URLSearchParams(window.location.search);
+    const loginError = urlParams.get('error');
+    if (loginError === 'not_member') {
+      showToast('Вы не состоите на Discord-сервере сообщества, поэтому доступ закрыт. Вступите на сервер и войдите снова.', 'error');
+    } else if (loginError === 'membership_check_failed') {
+      showToast('Не удалось проверить участие в сервере. Попробуйте войти ещё раз чуть позже.', 'error');
+    }
+    if (urlParams.get('error') === 'discord_not_configured') {
+      showToast('Discord OAuth не настроен в .env! Используйте демо-вход.', 'error');
+    }
+
+    // Init
+    checkAuth();
+  </script>
+</body>
+
+</html>

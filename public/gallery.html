@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Галерея клипов — ClipZikor</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="description" content="Галерея клипов сообщества ClipZikor" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            blurple: {
+              DEFAULT: '#5865F2',
+              hover: '#4752C4',
+              light: '#7983F5',
+              dark: '#3C45A5'
+            },
+            dark: {
+              950: '#0a0b0e',
+              900: '#101116',
+              850: '#161720',
+              800: '#1d1f2b',
+              700: '#282b3c',
+              600: '#383d54'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #101116;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #282b3c;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #5865F2;
+    }
+
+    .glass-panel {
+      background: rgba(22, 23, 32, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-input {
+      background: rgba(16, 17, 22, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .glass-input:focus {
+      border-color: #5865F2;
+      box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.25);
+    }
+
+    .chips-row {
+      scrollbar-width: none;
+    }
+
+    .chips-row::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-dark-950 text-gray-100 min-h-screen flex flex-col font-sans selection:bg-blurple selection:text-white relative">
+
+  <!-- Ambient Glows -->
+  <div
+    class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blurple/10 blur-[140px] pointer-events-none -z-10">
+  </div>
+  <div
+    class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/10 blur-[140px] pointer-events-none -z-10">
+  </div>
+
+  <!-- Header -->
+  <header class="w-full border-b border-white/5 bg-dark-900/60 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
+
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <!-- Свой логотип: положи файл logo.png рядом с сайтом (/logo.png).
+             Если файла нет — показывается старая иконка. -->
+        <img src="/logo.png" alt="ClipZikor"
+          class="h-10 w-auto max-w-[160px] object-contain group-hover:scale-105 transition-transform"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div style="display:none"
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blurple to-indigo-500 items-center justify-center shadow-lg shadow-blurple/25 group-hover:scale-105 transition-transform">
+          <i data-lucide="clapperboard" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold tracking-tight text-white">Clip<span class="text-blurple">Zikor</span></span>
+          <p class="text-xs text-gray-400 hidden sm:block">Хостинг клипов для Discord</p>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <a href="/gallery"
+          class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blurple/20 text-white border border-blurple/40 text-sm font-medium">
+          <i data-lucide="layout-grid" class="w-4 h-4 text-blurple-light"></i>
+          <span>Галерея</span>
+        </a>
+        <a href="/"
+          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 hover:text-white border border-white/10 text-sm font-medium transition">
+          <i data-lucide="plus" class="w-4 h-4 text-blurple"></i>
+          <span class="hidden sm:inline">Загрузить клип</span>
+        </a>
+        <div id="authContainer" class="flex items-center gap-3">
+          <div class="w-24 h-9 bg-dark-800 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- LOCKED: нужен вход / нет доступа -->
+    <div id="lockBox" class="hidden flex flex-col items-center justify-center text-center py-20">
+      <div
+        class="w-20 h-20 rounded-3xl bg-dark-800 border border-white/10 flex items-center justify-center text-amber-400 mb-5 shadow-lg shadow-amber-500/10">
+        <i data-lucide="lock" class="w-10 h-10"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-white mb-2">Галерея для участников сервера</h2>
+      <p id="lockText" class="text-gray-400 text-sm max-w-md mb-6">
+        Войдите через Discord — мы проверим, что вы состоите на сервере сообщества.
+      </p>
+      <div id="lockActions" class="flex items-center gap-2"></div>
+    </div>
+
+    <!-- GALLERY -->
+    <div id="galleryArea" class="hidden space-y-5">
+
+      <!-- Toolbar -->
+      <div class="glass-panel rounded-2xl p-4 space-y-4">
+        <div class="flex flex-col lg:flex-row gap-3">
+
+          <div class="relative flex-1">
+            <i data-lucide="search"
+              class="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            <input id="searchInput" type="search" placeholder="Поиск по названию, автору или игре" maxlength="100"
+              class="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none" />
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative">
+              <select id="sortSelect" aria-label="Сортировка"
+                class="glass-input appearance-none pl-4 pr-9 py-2.5 rounded-xl text-white text-sm focus:outline-none cursor-pointer"></select>
+              <i data-lucide="chevron-down"
+                class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+
+            <button id="dirBtn" type="button"
+              class="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm text-gray-200 transition"
+              title="Направление сортировки">
+              <i id="dirIcon" data-lucide="arrow-down" class="w-4 h-4 text-blurple"></i>
+              <span id="dirText">По убыванию</span>
+            </button>
+
+            <button id="mineBtn" type="button"
+              class="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border text-sm transition"
+              title="Показать только мои клипы">
+              <i data-lucide="user" class="w-4 h-4"></i>
+              <span>Мои клипы</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Game chips -->
+        <div id="gameChips" class="chips-row flex items-center gap-2 overflow-x-auto pb-1"></div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-gray-400 px-1">
+        <span id="resultMeta">&nbsp;</span>
+      </div>
+
+      <!-- Grid -->
+      <div id="clipGrid" class="grid gap-x-5 gap-y-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="hidden flex flex-col items-center text-center py-16 text-gray-400">
+        <div class="w-16 h-16 rounded-2xl bg-dark-800 border border-white/10 flex items-center justify-center mb-4">
+          <i data-lucide="film" class="w-8 h-8 opacity-60"></i>
+        </div>
+        <p id="emptyTitle" class="text-white font-semibold mb-1">Ничего не найдено</p>
+        <p id="emptyText" class="text-sm">Попробуйте изменить фильтры или поисковый запрос.</p>
+      </div>
+
+      <div class="flex justify-center">
+        <button id="loadMoreBtn" type="button"
+          class="hidden px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium text-white transition disabled:opacity-60">
+          Показать ещё
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-[70] flex flex-col gap-3 pointer-events-none"></div>
+
+  <script src="/clip-actions.js"></script>
+  <script>
+    const esc = ClipActions.escapeHtml;
+    const PAGE_SIZE = 24;
+    const SORTS = [
+      ['date', 'Дата публикации'],
+      ['views', 'Просмотры'],
+      ['likes', 'Лайки'],
+      ['dislikes', 'Дизлайки'],
+      ['comments', 'Комментарии'],
+      ['duration', 'Длительность'],
+      ['rating', 'Рейтинг (лайки − дизлайки)'],
+      ['title', 'Название']
+    ];
+
+    const authContainer = document.getElementById('authContainer');
+    const lockBox = document.getElementById('lockBox');
+    const lockText = document.getElementById('lockText');
+    const lockActions = document.getElementById('lockActions');
+    const galleryArea = document.getElementById('galleryArea');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const dirBtn = document.getElementById('dirBtn');
+    const dirText = document.getElementById('dirText');
+    const mineBtn = document.getElementById('mineBtn');
+    const gameChips = document.getElementById('gameChips');
+    const resultMeta = document.getElementById('resultMeta');
+    const clipGrid = document.getElementById('clipGrid');
+    const emptyState = document.getElementById('emptyState');
+    const emptyTitle = document.getElementById('emptyTitle');
+    const emptyText = document.getElementById('emptyText');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const toastContainer = document.getElementById('toastContainer');
+
+    let currentUser = null;
+    let isConfigured = true;
+    let reqSeq = 0;
+
+    const state = {
+      q: '', game: '', sort: 'date', dir: 'desc', mine: false,
+      page: 1, total: 0, hasMore: false, items: [], games: [], loading: false
+    };
+
+    // ---------- helpers ----------
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-semibold backdrop-blur-xl transition-all duration-300 transform translate-y-4 opacity-0 bg-dark-900/90 border-white/10 text-white';
+      const iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-triangle' : 'info';
+      const iconColor = type === 'success' ? 'text-emerald-400' : type === 'error' ? 'text-rose-400' : 'text-blurple';
+      toast.innerHTML = `
+        <div class="shrink-0 ${iconColor}"><i data-lucide="${iconName}" class="w-4 h-4"></i></div>
+        <div class="flex-1 font-medium">${esc(message)}</div>`;
+      toastContainer.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => toast.classList.remove('translate-y-4', 'opacity-0'), 20);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function plural(n, forms) {
+      const a = Math.abs(n) % 100, b = a % 10;
+      if (a > 10 && a < 20) return forms[2];
+      if (b > 1 && b < 5) return forms[1];
+      if (b === 1) return forms[0];
+      return forms[2];
+    }
+
+    function formatDuration(sec) {
+      if (!sec || sec < 0) return '';
+      const total = Math.round(sec);
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      return h > 0
+        ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+        : `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    function formatRelativeTime(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const diffSec = Math.floor((Date.now() - date) / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHour = Math.floor(diffMin / 60);
+      const diffDay = Math.floor(diffHour / 24);
+      if (diffSec < 60) return 'только что';
+      if (diffMin < 60) return `${diffMin} мин. назад`;
+      if (diffHour < 24) return `${diffHour} ч. назад`;
+      if (diffDay === 1) return 'вчера';
+      if (diffDay < 7) return `${diffDay} дн. назад`;
+      return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    const num = (n) => Number(n || 0).toLocaleString('ru-RU');
+
+    // ---------- auth / lock ----------
+    function renderAuthUI() {
+      if (currentUser) {
+        authContainer.innerHTML = `
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-dark-800/80 border border-white/10">
+              <img src="${esc(currentUser.avatarUrl)}" alt="" class="w-6 h-6 rounded-full object-cover ring-1 ring-blurple" />
+              <span class="text-xs font-semibold text-white max-w-[120px] truncate">${esc(currentUser.username)}</span>
+              ${currentUser.isAdmin ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Админ</span>' : ''}
+            </div>
+            <a href="/auth/logout" title="Выйти"
+              class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </a>
+          </div>`;
+      } else {
+        authContainer.innerHTML = `
+          <a href="/auth/discord" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blurple hover:bg-blurple-hover text-white text-xs font-semibold shadow-md transition">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i><span>Войти</span>
+          </a>`;
+      }
+      lucide.createIcons();
+    }
+
+    function showLock(reason) {
+      galleryArea.classList.add('hidden');
+      lockBox.classList.remove('hidden');
+      const messages = {
+        relogin: 'Нужно войти заново — мы проверим, что вы состоите на сервере сообщества.',
+        not_member: 'Вы не состоите на Discord-сервере сообщества, поэтому доступ к галерее закрыт. Вступите на сервер и войдите снова.',
+        check_failed: 'Не удалось проверить участие в сервере. Попробуйте войти ещё раз чуть позже.',
+        default: 'Войдите через Discord — мы проверим, что вы состоите на сервере сообщества.'
+      };
+      lockText.textContent = messages[reason] || messages.default;
+
+      const demo = !isConfigured
+        ? `<a href="/auth/dev-login" class="text-sm px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 font-semibold transition">Демо-вход</a>`
+        : '';
+      lockActions.innerHTML = `
+        ${demo}
+        <a href="/auth/discord" class="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blurple hover:bg-blurple-hover text-white text-sm font-semibold shadow-lg shadow-blurple/30 transition">
+          <i data-lucide="log-in" class="w-4 h-4"></i><span>Войти через Discord</span>
+        </a>`;
+      lucide.createIcons();
+    }
+
+    // ---------- URL state ----------
+    function readUrlState() {
+      const p = new URLSearchParams(location.search);
+      if (SORTS.some(([k]) => k === p.get('sort'))) state.sort = p.get('sort');
+      state.dir = p.get('dir') === 'asc' ? 'asc' : (p.get('dir') === 'desc' ? 'desc' : (state.sort === 'title' ? 'asc' : 'desc'));
+      state.q = (p.get('q') || '').slice(0, 100);
+      state.game = (p.get('game') || '').slice(0, 50);
+      state.mine = p.get('mine') === '1';
+    }
+
+    function writeUrlState() {
+      const p = new URLSearchParams();
+      if (state.sort !== 'date') p.set('sort', state.sort);
+      const defaultDir = state.sort === 'title' ? 'asc' : 'desc';
+      if (state.dir !== defaultDir) p.set('dir', state.dir);
+      if (state.q) p.set('q', state.q);
+      if (state.game) p.set('game', state.game);
+      if (state.mine) p.set('mine', '1');
+      const qs = p.toString();
+      history.replaceState(null, '', '/gallery' + (qs ? '?' + qs : ''));
+    }
+
+    // ---------- toolbar rendering ----------
+    function renderToolbar() {
+      sortSelect.innerHTML = SORTS
+        .map(([k, label]) => `<option value="${k}" class="bg-dark-900 text-white" ${k === state.sort ? 'selected' : ''}>${esc(label)}</option>`)
+        .join('');
+
+      const asc = state.dir === 'asc';
+      dirText.textContent = asc ? 'По возрастанию' : 'По убыванию';
+      // lucide заменяет <i> на <svg> — пересоздаём иконку целиком
+      const fresh = document.createElement('i');
+      fresh.id = 'dirIcon';
+      fresh.setAttribute('data-lucide', asc ? 'arrow-up' : 'arrow-down');
+      fresh.className = 'w-4 h-4 text-blurple';
+      document.getElementById('dirIcon').replaceWith(fresh);
+
+      mineBtn.className = 'flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border text-sm transition ' +
+        (state.mine
+          ? 'bg-blurple/25 border-blurple/50 text-white'
+          : 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-200');
+
+      renderChips();
+      lucide.createIcons();
+    }
+
+    function renderChips() {
+      const chip = (value, label, count, active) => `
+        <button type="button" data-game="${esc(value)}"
+          class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${active
+            ? 'bg-blurple border-blurple text-white'
+            : 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-300'}">
+          ${esc(label)}${count != null ? ` <span class="${active ? 'text-white/80' : 'text-gray-500'}">${count}</span>` : ''}
+        </button>`;
+
+      const totalAll = state.games.reduce((s, g) => s + g.count, 0);
+      let html = chip('', 'Все игры', totalAll, !state.game);
+      html += state.games.map((g) => chip(g.name, g.name, g.count, state.game === g.name)).join('');
+      // выбранная игра могла исчезнуть из списка (например, после поиска)
+      if (state.game && !state.games.some((g) => g.name === state.game)) {
+        html += chip(state.game, state.game, 0, true);
+      }
+      gameChips.innerHTML = html;
+    }
+
+    // ---------- grid rendering ----------
+    function cardHtml(c) {
+      const dur = formatDuration(c.duration);
+      const thumb = c.thumbnailUrl
+        ? `<img src="${esc(c.thumbnailUrl)}" alt="" loading="lazy"
+             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+             onerror="this.style.display='none'" />`
+        : '';
+      const avatar = c.author.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png';
+      const ownerMenu = c.canManage
+        ? `<div class="relative shrink-0">
+             <button type="button" data-action="menu" data-id="${esc(c.id)}" aria-label="Действия с клипом"
+               class="w-8 h-8 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white text-lg leading-none font-bold transition">⋮</button>
+             <div data-menu="${esc(c.id)}"
+               class="hidden absolute right-0 top-9 z-20 w-44 rounded-xl bg-dark-900 border border-white/15 shadow-2xl overflow-hidden text-sm">
+               <button type="button" data-action="edit" data-id="${esc(c.id)}"
+                 class="w-full text-left px-4 py-2.5 text-gray-200 hover:bg-white/10 transition">Изменить</button>
+               <button type="button" data-action="delete" data-id="${esc(c.id)}"
+                 class="w-full text-left px-4 py-2.5 text-rose-400 hover:bg-rose-500/10 transition">Удалить</button>
+             </div>
+           </div>`
+        : '';
+
+      return `
+        <article class="group" data-card="${esc(c.id)}">
+          <a href="/clip/${esc(c.id)}" class="block">
+            <div class="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-dark-800 to-dark-900 border border-white/5 group-hover:border-blurple/40 transition">
+              ${thumb}
+              ${dur ? `<span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-white text-[11px] font-mono">${dur}</span>` : ''}
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-dark-950/80 backdrop-blur border border-white/10 text-[10px] font-semibold text-gray-200 max-w-[70%] truncate">${esc(c.game)}</span>
+            </div>
+          </a>
+          <div class="flex gap-3 mt-3">
+            <img src="${esc(avatar)}" alt="" class="w-9 h-9 rounded-full object-cover ring-1 ring-white/10 shrink-0" />
+            <div class="min-w-0 flex-1">
+              <a href="/clip/${esc(c.id)}" class="block text-sm font-semibold text-white leading-snug line-clamp-2 break-words hover:text-blurple-light transition">${esc(c.title)}</a>
+              <div class="text-xs text-gray-400 mt-1 truncate">${esc(c.author.username)}</div>
+              <div class="text-xs text-gray-500 mt-0.5">${num(c.views)} ${plural(c.views, ['просмотр', 'просмотра', 'просмотров'])} · ${esc(formatRelativeTime(c.createdAt))}</div>
+              <div class="flex items-center gap-3 mt-1.5 text-[11px] text-gray-400">
+                <span class="flex items-center gap-1" title="Лайки"><i data-lucide="thumbs-up" class="w-3.5 h-3.5 text-emerald-400"></i>${num(c.likes)}</span>
+                <span class="flex items-center gap-1" title="Дизлайки"><i data-lucide="thumbs-down" class="w-3.5 h-3.5 text-rose-400"></i>${num(c.dislikes)}</span>
+                <span class="flex items-center gap-1" title="Комментарии"><i data-lucide="message-square" class="w-3.5 h-3.5 text-blurple-light"></i>${num(c.comments)}</span>
+              </div>
+            </div>
+            ${ownerMenu}
+          </div>
+        </article>`;
+    }
+
+    function skeletonHtml(n) {
+      return Array.from({ length: n }, () => `
+        <div class="animate-pulse">
+          <div class="aspect-video rounded-2xl bg-dark-900"></div>
+          <div class="flex gap-3 mt-3">
+            <div class="w-9 h-9 rounded-full bg-dark-900"></div>
+            <div class="flex-1 space-y-2"><div class="h-3.5 rounded bg-dark-900 w-5/6"></div><div class="h-3 rounded bg-dark-900 w-1/2"></div></div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderGrid() {
+      clipGrid.innerHTML = state.items.map(cardHtml).join('');
+
+      const empty = !state.loading && state.items.length === 0;
+      emptyState.classList.toggle('hidden', !empty);
+      if (empty) {
+        if (state.mine && !state.q && !state.game) {
+          emptyTitle.textContent = 'У вас пока нет клипов';
+          emptyText.innerHTML = 'Загрузите первый клип на <a href="/" class="text-blurple-light hover:underline">главной странице</a>.';
+        } else {
+          emptyTitle.textContent = 'Ничего не найдено';
+          emptyText.textContent = 'Попробуйте изменить фильтры или поисковый запрос.';
+        }
+      }
+
+      resultMeta.textContent = state.loading && !state.items.length
+        ? 'Загрузка…'
+        : `${num(state.total)} ${plural(state.total, ['клип', 'клипа', 'клипов'])}`;
+
+      loadMoreBtn.classList.toggle('hidden', !state.hasMore);
+      lucide.createIcons();
+    }
+
+    // ---------- data ----------
+    async function loadGallery(append = false) {
+      const myReq = ++reqSeq;
+      if (!append) {
+        state.page = 1;
+        state.items = [];
+        state.loading = true;
+        clipGrid.innerHTML = skeletonHtml(8);
+        emptyState.classList.add('hidden');
+        loadMoreBtn.classList.add('hidden');
+        resultMeta.textContent = 'Загрузка…';
+      } else {
+        state.page += 1;
+        loadMoreBtn.disabled = true;
+      }
+
+      const p = new URLSearchParams({ sort: state.sort, dir: state.dir, page: state.page, pageSize: PAGE_SIZE });
+      if (state.q) p.set('q', state.q);
+      if (state.game) p.set('game', state.game);
+      if (state.mine) p.set('mine', '1');
+
+      try {
+        const res = await fetch('/api/gallery?' + p.toString());
+        if (myReq !== reqSeq) return; // пришёл устаревший ответ
+        if (res.status === 401 || res.status === 403) {
+          showLock('relogin');
+          return;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        state.items = append ? state.items.concat(data.clips) : data.clips;
+        state.total = data.total;
+        state.hasMore = data.hasMore;
+        state.games = data.games || [];
+      } catch (err) {
+        if (myReq !== reqSeq) return;
+        console.error('Gallery load failed:', err);
+        if (append) state.page -= 1;
+        showToast('Не удалось загрузить клипы', 'error');
+      } finally {
+        if (myReq === reqSeq) {
+          state.loading = false;
+          loadMoreBtn.disabled = false;
+          renderChips();
+          renderGrid();
+        }
+      }
+    }
+
+    function reload() {
+      writeUrlState();
+      renderToolbar();
+      loadGallery(false);
+    }
+
+    // ---------- events ----------
+    let searchTimer = null;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        const q = searchInput.value.trim();
+        if (q === state.q) return;
+        state.q = q;
+        reload();
+      }, 300);
+    });
+
+    sortSelect.addEventListener('change', () => {
+      state.sort = sortSelect.value;
+      state.dir = state.sort === 'title' ? 'asc' : 'desc';
+      reload();
+    });
+
+    dirBtn.addEventListener('click', () => {
+      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+      reload();
+    });
+
+    mineBtn.addEventListener('click', () => {
+      state.mine = !state.mine;
+      reload();
+    });
+
+    gameChips.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-game]');
+      if (!btn) return;
+      state.game = btn.getAttribute('data-game');
+      reload();
+    });
+
+    loadMoreBtn.addEventListener('click', () => loadGallery(true));
+
+    function closeMenus() {
+      document.querySelectorAll('[data-menu]').forEach((m) => m.classList.add('hidden'));
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('[data-action="menu"]')) closeMenus();
+    });
+
+    function adjustFacet(name, delta) {
+      const f = state.games.find((g) => g.name === name);
+      if (f) {
+        f.count += delta;
+        if (f.count <= 0) state.games = state.games.filter((g) => g !== f);
+      } else if (delta > 0) {
+        state.games.push({ name, count: delta });
+      }
+    }
+
+    clipGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+      const item = state.items.find((c) => c.id === id);
+      if (!item) return;
+
+      if (action === 'menu') {
+        e.stopPropagation();
+        const menu = clipGrid.querySelector(`[data-menu="${CSS.escape(id)}"]`);
+        const wasHidden = menu.classList.contains('hidden');
+        closeMenus();
+        if (wasHidden) menu.classList.remove('hidden');
+        return;
+      }
+
+      closeMenus();
+
+      if (action === 'edit') {
+        ClipActions.edit(item, (saved) => {
+          const oldGame = item.game;
+          item.title = saved.title;
+          item.game = saved.game;
+          if (oldGame !== saved.game) {
+            adjustFacet(oldGame, -1);
+            adjustFacet(saved.game, +1);
+            // клип больше не подходит под выбранный фильтр по игре
+            if (state.game && saved.game !== state.game) {
+              state.items = state.items.filter((c) => c.id !== id);
+              state.total = Math.max(0, state.total - 1);
+            }
+          }
+          renderChips();
+          renderGrid();
+        });
+      } else if (action === 'delete') {
+        ClipActions.remove(item, () => {
+          state.items = state.items.filter((c) => c.id !== id);
+          state.total = Math.max(0, state.total - 1);
+          adjustFacet(item.game, -1);
+          renderChips();
+          renderGrid();
+        });
+      }
+    });
+
+    // ---------- init ----------
+    async function init() {
+      readUrlState();
+      searchInput.value = state.q;
+
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        currentUser = data.user;
+        isConfigured = Boolean(data.isDiscordConfigured);
+        renderAuthUI();
+
+        if (!currentUser) {
+          showLock(data.needsRelogin ? 'relogin' : 'default');
+          return;
+        }
+      } catch (err) {
+        renderAuthUI();
+        showLock('default');
+        return;
+      }
+
+      lockBox.classList.add('hidden');
+      galleryArea.classList.remove('hidden');
+      renderToolbar();
+      loadGallery(false);
+    }
+
+    init();
+    lucide.createIcons();
+  </script>
+</body>
+
+</html>
